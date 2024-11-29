@@ -56,7 +56,11 @@ function Questions() {
                 answer: formattedAnswer,
             });
             const isCorrect = response.data.correct;
-            setFeedback(isCorrect ? "Corect!" : `Greșit! Răspuns corect: ${question.correct_answer}`);
+            const correctAnswer =
+            question.type === "fill_blank"
+                ? question.options[question.correct_option] // Folosim opțiunea corectă
+                : question.correct_answer;
+            setFeedback(isCorrect ? "Corect!" : `Greșit! Răspuns corect: ${correctAnswer}`);
             if (isCorrect) {
                 setXp((prevXp) => prevXp + response.data.xp);
             }
@@ -66,6 +70,8 @@ function Questions() {
                 ...prev,
                 [currentQuestion]: { correct: isCorrect, answer: formattedAnswer },
             }));
+
+            
         } catch (error) {
             console.error("Eroare la trimiterea răspunsului:", error);
         }
