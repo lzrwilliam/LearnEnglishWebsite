@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
+import "../styles/Login.css";
 
 function Login() {
     const [username, setUsername] = useState("");
@@ -14,8 +15,8 @@ function Login() {
         try {
             const response = await api.post("/login", { username, password });
             if (response.data.status === "success") {
-                login(response.data.user); // Salvăm utilizatorul logat
-                setMessage("Autentificare reușită!");
+                login(response.data.user);
+                window.location.href = "/";
             } else {
                 setMessage(response.data.message);
             }
@@ -27,7 +28,7 @@ function Login() {
     };
 
     return (
-        <div>
+        <div className="login">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
                 <input

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
+import "../styles/Login.css";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -24,7 +25,7 @@ function Register() {
             });
             if (response.data.status === "success") {
                 login(response.data.user); // Log in the user immediately after registration
-                setMessage("Registration successful!");
+                window.location.href = "/";
             } else {
                 setMessage(response.data.message);
             }
@@ -36,7 +37,7 @@ function Register() {
     };
 
     return (
-        <div>
+        <div className="login">
             <h2>Register</h2>
             <form onSubmit={handleRegister}>
                 <input

@@ -1,5 +1,5 @@
 import React, { useState, createContext } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Users from "./components/Users";
@@ -9,6 +9,7 @@ import Requests from "./components/Requests";
 
 import ProtectedRoute from "./components/ProtectedRoute"; // Importăm ruta protejată
 import "./styles/Navbar.css";
+import "./styles/App.css";
 import Reviewer from "./components/Reviewer";
 
 export const AuthContext = createContext();
@@ -27,6 +28,7 @@ function App() {
     const logout = () => {
         setUser(null);
         localStorage.removeItem("user");
+        window.location.href = "/login";
     };
 
     return (
@@ -34,7 +36,6 @@ function App() {
             <BrowserRouter>
                 <div className="navbar">
                     <nav>
-                        {user && <Link to="/questions" className="nav-link">Întrebări</Link>}
                         {!user ? (
                             <>
                                 <Link to="/login" className="nav-link">Login</Link>
@@ -42,6 +43,7 @@ function App() {
                             </>
                         ) : (
                             <>
+                                <Link to="/questions" className="nav-link">Întrebări</Link>
                                 {user.role === "admin" && (
                                     <div className="dropdown">
                                         <button className="dropdown-button">Admin</button>
@@ -66,31 +68,34 @@ function App() {
                         )}
                     </nav>
                 </div>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={ <Register />} />
-                    
-                   { user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />
-                   )}
-               
-                    <Route
-                        path="/questions"
-                        element={
-                            <ProtectedRoute>
-                                <Questions />
-                            </ProtectedRoute>
-                        }
-                    />
-                    {user?.role === "admin" && (
-                        <Route path="/admin/exercises" element={ <Admin />} />
+                <div className="content">
+                    <Routes>
+                        <Route path="/" element={user ? <Navigate to="/questions" /> : <Navigate to="/login" />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={ <Register />} />
+                        
+                    { user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />
                     )}
-                    {user?.role === "admin" && (
-                        <Route path="/admin/users" element={<Users/>}  />
-                    )}
-                     {user?.role === "reviewer" && (
-                        <Route path="/reviewer/exercises" element={<Reviewer />} />
-                    )}
-                </Routes>
+                
+                        <Route
+                            path="/questions"
+                            element={
+                                <ProtectedRoute>
+                                    <Questions />
+                                </ProtectedRoute>
+                            }
+                        />
+                        {user?.role === "admin" && (
+                            <Route path="/admin/exercises" element={ <Admin />} />
+                        )}
+                        {user?.role === "admin" && (
+                            <Route path="/admin/users" element={<Users/>}  />
+                        )}
+                        {user?.role === "reviewer" && (
+                            <Route path="/reviewer/exercises" element={<Reviewer />} />
+                        )}
+                    </Routes>
+                </div>
             </BrowserRouter>
         </AuthContext.Provider>
     );
