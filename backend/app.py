@@ -183,6 +183,15 @@ class Exercise(db.Model):
     difficulty = db.Column(db.String(50), nullable=False, default="easy")
     random_order = db.Column(db.Float, default=func.random())
 
+    user_progress = db.relationship(
+        'UserQuestionProgress',
+        cascade="all, delete",
+        backref='exercise',
+        passive_deletes=True
+    )
+
+
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -210,8 +219,8 @@ class UserQuestionProgress(db.Model):
     __tablename__ = 'user_question_progress'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    question_id = db.Column(db.Integer, db.ForeignKey('exercises.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('exercises.id',ondelete='CASCADE'),nullable=False)
     answered_correctly = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
