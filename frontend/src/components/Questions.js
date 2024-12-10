@@ -97,6 +97,8 @@ function Questions() {
     const handlePrevious = () => {
         if (currentQuestion > 0) {
             setCurrentQuestion(currentQuestion - 1);
+            setFeedback("");
+
         }
     };
 
