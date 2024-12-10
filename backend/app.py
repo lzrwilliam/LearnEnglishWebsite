@@ -268,14 +268,23 @@ class ReviewerRequest(db.Model):
     status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-class UserQuestionProgress(db.Model):
 
+class UserQuestionProgress(db.Model):
     __tablename__ = 'user_question_progress'
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('exercises.id'), nullable=False)
     answered_correctly = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "question_id": self.question_id,
+            "answered_correctly": self.answered_correctly,
+        }
 @app.route("/api/reviewer/requests", methods=["GET"])
 def get_reviewer_requests():
 
@@ -418,7 +427,6 @@ def reject_request(request_id):
 
 @app.route('/api/questions', methods=['POST'])
 def get_questions():
-
     data = request.json
     user_id = data.get('user_id')
     session_questions = data.get('session_questions', [])
@@ -427,19 +435,22 @@ def get_questions():
         return {"message": "User ID is required.", "status": "fail"}, 400
 
     user = User.query.get(user_id)
-
     if not user:
         return {"message": "User not found.", "status": "fail"}, 404
 
+    answered_questions = db.session.query(UserQuestionProgress.question_id).filter_by(user_id=user_id).all()
+    answered_question_ids = [q[0] for q in answered_questions]
+
     questions = Exercise.query.filter(
         Exercise.difficulty == user.difficulty,
-        ~Exercise.id.in_(session_questions)
+        ~Exercise.id.in_(session_questions + answered_question_ids)
     ).order_by(Exercise.random_order).limit(5).all()
 
     if not questions:
         return {"message": f"No more questions available for difficulty {user.difficulty}.", "status": "fail"}, 404
 
     return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
+
 
 @app.route('/api/reviewer/exercises', methods=['GET'])
 def get_reviewer_exercises():
@@ -450,7 +461,6 @@ def get_reviewer_exercises():
 
 @app.route('/api/answer', methods=['POST'])
 def submit_answer():
-
     data = request.json
     user_id = data.get('user_id')
     question_id = data.get('question_id')
@@ -460,9 +470,13 @@ def submit_answer():
         return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
 
     question = Exercise.query.get(question_id)
-
     if not question:
         return {"message": "Întrebarea nu există.", "status": "fail"}, 404
+
+    # Verificăm dacă întrebarea a fost deja răspunsă
+    progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
+    if progress:
+        return {"message": "Întrebarea a fost deja răspunsă.", "status": "fail"}, 400
 
     correct = False
     xp = 0
@@ -485,19 +499,17 @@ def submit_answer():
 
     if correct:
         user = User.query.get(user_id)
-
         if user:
             user.xp += xp
             db.session.commit()
 
-        progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
-
-        if not progress:
-            progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=True)
-            db.session.add(progress)
-            db.session.commit()
+    
+    progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=correct)
+    db.session.add(progress)
+    db.session.commit()
 
     return {"message": "Răspuns trimis.", "correct": correct, "xp": xp, "status": "success"}, 200
+
 
 @app.route('/api/admin/exercises', methods=['GET'])
 def get_all_exercises():

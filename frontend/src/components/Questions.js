@@ -15,6 +15,9 @@ function Questions() {
     const [availableWords, setAvailableWords] = useState([]); // Available words for drag-and-drop
     const [responses, setResponses] = useState({}); // Tracks responses and correctness
 
+    const [userResponses, setUserResponses] = useState({}); // sa mentinem raspunsurile utilizatorului la intrb raspunse cand navigheaza prin intrebari
+
+
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
     const fetchQuestions = async () => {
@@ -38,6 +41,12 @@ function Questions() {
 
     const submitAnswer = async () => {
         const question = questions[currentQuestion];
+
+
+        if (responses[currentQuestion]?.submitted) {
+            setFeedback("Ai răspuns deja la această întrebare.");
+            return;
+        }
         let formattedAnswer = answer;
 
         if (question.type === "rearrange") {
@@ -66,7 +75,11 @@ function Questions() {
             setSessionQuestions((prev) => [...prev, question.id]);
             setResponses((prev) => ({
                 ...prev,
-                [currentQuestion]: { correct: isCorrect, answer: formattedAnswer },
+                [currentQuestion]: { correct: isCorrect, answer: formattedAnswer , submitted: true},
+            }));
+            setUserResponses((prev) => ({
+                ...prev,
+                [question.id]: { answer: formattedAnswer, correct: isCorrect },
             }));
         } catch (error) {
             console.error("Error submitting answer:", error);
@@ -88,6 +101,11 @@ function Questions() {
     };
 
     const handleDragStart = (e, word, source, index) => {
+        const isAnswered = responses[currentQuestion]?.submitted;
+
+        if (isAnswered) {
+            return; 
+        }
         e.dataTransfer.setData("word", word);
         e.dataTransfer.setData("source", source);
         e.dataTransfer.setData("index", index);
@@ -156,6 +174,10 @@ function Questions() {
     );
 
     const renderQuestionOptions = (question) => {
+        const userResponse = userResponses[question.id];
+
+        const isAnswered = responses[currentQuestion]?.submitted;
+
         if (question.type === "multiple_choice" || question.type === "fill_blank") {
             if (!Array.isArray(question.options)) {
                 return <p>Eroare: Opțiunile nu sunt disponibile pentru această întrebare.</p>;
@@ -167,9 +189,14 @@ function Questions() {
                             <label>
                                 <input
                                     type="radio"
-                                    value={String(index)} // Store index as string (modified)
-                                    checked={answer === String(index)} // Compare answer as string (modified)
-                                    onChange={(e) => setAnswer(e.target.value)} // Update answer as string (modified)
+                                    value={String(index)} 
+                                    checked={
+                                        userResponse
+                                            ? userResponse.answer === String(index)
+                                            : answer === String(index)
+                                    } 
+                                    onChange={(e) => setAnswer(e.target.value)}
+                                    disabled={isAnswered} 
                                 />
                                 {option}
                             </label>
@@ -200,7 +227,7 @@ function Questions() {
     {availableWords.map((word, index) => (
         <div
             key={index}
-            draggable
+            draggable={!isAnswered} // Permiterea tragerii doar daca intrebarea nu a fost raspunsa
             onDragStart={(e) => handleDragStart(e, word, "available", index)}
             className="drag-item"
         >
@@ -221,7 +248,7 @@ function Questions() {
                         {dragItems.map((word, index) => (
                             <div
                                 key={index}
-                                draggable
+                                draggable={!isAnswered}
                                 onDragStart={(e) => handleDragStart(e, word, "dragItems", index)}
                                 onDrop={(e) => handleDrop(e, index, "dragItems")}
                                 onDragOver={handleDragOver}
