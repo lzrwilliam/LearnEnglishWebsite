@@ -9,6 +9,8 @@ function Users() {
     const [message, setMessage] = useState("");
     const [banReason, setBanReason] = useState("");
     const [userToBan, setUserToBan] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedRole, setSelectedRole] = useState("");
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -66,6 +68,42 @@ function Users() {
         }
     };
 
+    const handleRoleSelection = (userId, role) => {
+        setSelectedUser(userId);
+        setSelectedRole(role);
+    };
+
+    const handleConfirmRoleChange = async () => {
+        if (!selectedUser || !selectedRole) {
+            setMessage("Selectați un utilizator și un rol pentru a confirma schimbarea.");
+            return;
+        }
+
+        try {
+            const response = await api.post("/admin/update_role", {
+                user_id: selectedUser,
+                new_role: selectedRole,
+            });
+
+            if (response.data.status === "success") {
+                setUsers((prev) =>
+                    prev.map((u) =>
+                        u.id === selectedUser ? { ...u, role: selectedRole } : u
+                    )
+                );
+                setMessage(response.data.message);
+                setSelectedUser(null);
+                setSelectedRole("");
+            }
+        } catch (error) {
+            setMessage("Eroare la schimbarea rolului.");
+        }
+    };
+    const handleCancelRoleChange = () => {
+        setSelectedUser(null);
+        setSelectedRole("");
+    };
+
     const handleKick = async (userId) => {
         const confirmKick = window.confirm("Ești sigur că vrei să ștergi acest utilizator?");
         if (!confirmKick) return;
@@ -118,11 +156,48 @@ function Users() {
                     {u.id !== user.id && (
                         <button className="kick-btn" onClick={() => handleKick(u.id)}>Kick</button>
                     )}
+
+{u.id !== user.id && (
+                                       <select
+                                       className="role-dropdown"
+                                       value={selectedUser === u.id ? selectedRole : ""}
+                                       onChange={(e) => handleRoleSelection(u.id, e.target.value)}
+                                   >
+                                       <option value="" disabled>
+                                           Selectați un rol
+                                       </option>
+                                       {["user", "reviewer", "admin"]
+                                           .filter((role) => role !== u.role) // Excludem rolul curent al utilizatorului
+                                           .map((role) => (
+                                               <option key={role} value={role}>
+                                                   {role.charAt(0).toUpperCase() + role.slice(1)}
+                                               </option>
+                                           ))}
+                                   </select>
+                                    )}
+
+                    
                 </td>
+               
             </tr>
         ))}
     </tbody>
 </table>
+
+{selectedUser && selectedRole && (
+                <div className="confirmation-section">
+                    <p>
+                        Sunteți sigur că doriți să schimbați rolul utilizatorului{" "}
+                        <strong>{selectedUser}</strong> la <strong>{selectedRole}</strong>?
+                    </p>
+                    <button className="confirm-btn" onClick={handleConfirmRoleChange}>
+                        Confirmă
+                    </button>
+                    <button className="cancel-btn" onClick={handleCancelRoleChange}>
+                        Anulează
+                    </button>
+                </div>
+            )}
 
             {userToBan && (
                 <div>

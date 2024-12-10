@@ -392,6 +392,28 @@ def submit_answer():
     return {"message": "Răspuns trimis.", "correct": correct, "xp": xp, "status": "success"}, 200
 
 
+@app.route('/api/admin/update_role', methods=['POST'])
+def update_role():
+    data = request.json
+    user_id = data.get("user_id")
+    new_role = data.get("new_role")
+
+    if not user_id or not new_role:
+        return {"message": "User ID și rolul nou sunt necesare.", "status": "fail"}, 400
+
+    valid_roles = ["user", "reviewer", "admin"]
+    if new_role.lower() not in valid_roles:
+        return {"message": "Rol invalid.", "status": "fail"}, 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return {"message": "Userul nu a fost găsit.", "status": "fail"}, 404
+
+    user.role = new_role.lower()
+    db.session.commit()
+
+    return {"message": f"Rolul utilizatorului {user.username} a fost actualizat la {new_role}.", "status": "success"}, 200
+
 @app.route('/api/admin/exercises', methods=['GET'])
 def get_all_exercises():
 
