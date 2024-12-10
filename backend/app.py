@@ -90,70 +90,7 @@ def login():
         "user": user.to_dict()
     }, 200
 
-@app.route('/api/admin/exercises/<int:exercise_id>', methods=['DELETE'])
-def delete_exercise(exercise_id):
 
-    try:
-        exercise = Exercise.query.get(exercise_id)
-
-        if not exercise:
-            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
-
-        db.session.delete(exercise)
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost șters cu succes.", "status": "success"}, 200
-    
-    except Exception as e:
-        return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
-
-@app.route('/api/admin/exercises/<int:exercise_id>', methods=['PUT'])
-def edit_exercise(exercise_id):
-
-    data = request.json
-
-    try:
-        exercise = Exercise.query.get(exercise_id)
-
-        if not exercise:
-            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
-
-        exercise.question = data.get("question", exercise.question)
-        exercise.options = data.get("options", exercise.options)
-        exercise.correct_option = data.get("correct_option", exercise.correct_option)
-        exercise.correct_answer = data.get("correct_answer", exercise.correct_answer)
-        exercise.type = data.get("type", exercise.type)
-        exercise.difficulty = data.get("difficulty", exercise.difficulty)
-
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost actualizat cu succes.", "status": "success"}, 200
-    
-    except Exception as e:
-        return {"message": "Eroare la actualizarea exercițiului.", "status": "fail", "error": str(e)}, 500
-
-@app.route('/api/admin/exercises', methods=['POST'])
-def add_exercise():
-
-    data = request.json
-
-    try:
-        new_exercise = Exercise(
-            question=data["question"],
-            options=data.get("options"),                # Poate fi None
-            correct_option=data.get("correct_option"),  # Poate fi None
-            correct_answer=data.get("correct_answer"),  # Poate fi None
-            type=data["type"],
-            difficulty=data["difficulty"]
-        )
-
-        db.session.add(new_exercise)
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost adăugat cu succes.", "status": "success", "exercise": new_exercise.to_dict()}, 201
-    
-    except Exception as e:
-        return {"message": "Eroare la adăugarea exercițiului.", "status": "fail", "error": str(e)}, 500
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -285,145 +222,7 @@ class UserQuestionProgress(db.Model):
             "question_id": self.question_id,
             "answered_correctly": self.answered_correctly,
         }
-@app.route("/api/reviewer/requests", methods=["GET"])
-def get_reviewer_requests():
 
-    reviewer_id = request.args.get("reviewer_id")
-
-    if not reviewer_id:
-        return jsonify({"status": "error", "message": "Reviewer ID is required."}), 400
-
-    try:
-        pending_requests = ReviewerRequest.query.filter_by(reviewer_id=reviewer_id, status="pending").all()
-
-        formatted_requests = [
-            {
-                "id": req.id,
-                "reviewer_id": req.reviewer_id,
-                "request_type": req.request_type,
-                "exercise_data": req.exercise_data,
-                "status": req.status,
-                "created_at": req.created_at,
-            }
-            for req in pending_requests
-        ]
-
-        return jsonify({"status": "success", "requests": formatted_requests}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route("/api/reviewer/requests", methods=["POST"])
-def create_request():
-
-    data = request.json
-    reviewer_id = data.get("reviewer_id")
-    request_type = data.get("request_type")
-    exercise_data = data.get("exercise_data")
-    exercise_id = exercise_data.get("id")
-
-    if not reviewer_id or not request_type or not exercise_data:
-        return jsonify({"status": "error", "message": "Invalid data provided"}), 400
-
-    existing_request = ReviewerRequest.query.filter(
-        ReviewerRequest.reviewer_id == reviewer_id,
-        ReviewerRequest.status == "pending",
-        ReviewerRequest.request_type == request_type,
-        db.cast(ReviewerRequest.exercise_data["id"], db.String) == str(exercise_id)
-    ).first()
-
-    if existing_request:
-        return jsonify({"status": "error", "message": "A pending request for this exercise already exists."}), 400
-
-    new_request = ReviewerRequest(
-        reviewer_id=reviewer_id,
-        request_type=request_type,
-        exercise_data=exercise_data,
-    )
-
-    db.session.add(new_request)
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Request submitted successfully"}), 201
-
-@app.route("/api/admin/requests", methods=["GET"])
-def get_requests():
-
-    requests = ReviewerRequest.query.filter_by(status="pending").all()
-    formatted_requests = []
-
-    for req in requests:
-        exercise_data = req.exercise_data
-
-        if req.request_type == "edit":
-            original_exercise = Exercise.query.get(exercise_data.get("id"))
-            exercise_data = {
-                "original": original_exercise.to_dict() if original_exercise else {},
-                "proposed": exercise_data,
-            }
-        elif req.request_type == "delete":
-            exercise = Exercise.query.get(exercise_data.get("id"))
-            if exercise:
-                exercise_data = exercise.to_dict()
-
-        formatted_requests.append({
-            "id": req.id,
-            "reviewer_id": req.reviewer_id,
-            "request_type": req.request_type,
-            "exercise_data": exercise_data,
-            "created_at": req.created_at,
-        })
-
-    return jsonify({"requests": formatted_requests})
-
-@app.route("/api/admin/requests/<int:request_id>/approve", methods=["POST"])
-def approve_request(request_id):
-
-    request_item = ReviewerRequest.query.get(request_id)
-
-    if not request_item:
-        return jsonify({"status": "error", "message": "Request not found"}), 404
-
-    try:
-        if request_item.request_type == "add":
-            new_exercise = Exercise(**request_item.exercise_data)
-            db.session.add(new_exercise)
-        elif request_item.request_type == "edit":
-            exercise_id = request_item.exercise_data.get("id")
-            exercise = Exercise.query.get(exercise_id)
-            if exercise:
-                for key, value in request_item.exercise_data.items():
-                    setattr(exercise, key, value)
-        elif request_item.request_type == "delete":
-            exercise_id = request_item.exercise_data.get("id")
-            exercise = Exercise.query.get(exercise_id)
-            if exercise:
-                db.session.delete(exercise)
-
-        request_item.status = "approved"
-        db.session.commit()
-
-        return jsonify({"status": "success", "message": "Request approved successfully"}), 200
-    
-    except Exception as e:
-        return jsonify({"status": "error", "message": "Error processing request", "error": str(e)}), 500
-
-@app.route("/api/admin/requests/<int:request_id>/reject", methods=["POST"])
-def reject_request(request_id):
-
-    request_item = ReviewerRequest.query.get(request_id)
-
-    if not request_item:
-        return jsonify({"status": "error", "message": "Request not found"}), 404
-
-    try:
-        request_item.status = "rejected"
-        db.session.commit()
-
-        return jsonify({"status": "success", "message": "Request rejected successfully"}), 200
-    
-    except Exception as e:
-        return jsonify({"status": "error", "message": "Error rejecting request", "error": str(e)}), 500
 
 @app.route('/api/questions', methods=['POST'])
 def get_questions():
@@ -458,6 +257,88 @@ def get_reviewer_exercises():
     exercises = Exercise.query.all()
 
     return {"exercises": [exercise.to_dict() for exercise in exercises]}, 200
+
+
+
+@app.route('/api/reviewer/exercises/<int:exercise_id>', methods=['PUT'])
+def edit_exercise(exercise_id):
+
+    data = request.json
+
+    try:
+        exercise = Exercise.query.get(exercise_id)
+
+        if not exercise:
+            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
+
+        exercise.question = data.get("question", exercise.question)
+        exercise.options = data.get("options", exercise.options)
+        exercise.correct_option = data.get("correct_option", exercise.correct_option)
+        exercise.correct_answer = data.get("correct_answer", exercise.correct_answer)
+        exercise.type = data.get("type", exercise.type)
+        exercise.difficulty = data.get("difficulty", exercise.difficulty)
+
+        db.session.commit()
+
+        return {"message": "Exercițiul a fost actualizat cu succes.", "status": "success"}, 200
+    
+    except Exception as e:
+        return {"message": "Eroare la actualizarea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+@app.route('/api/reviewer/exercises', methods=['POST'])
+def add_exercise():
+
+    data = request.json
+
+    try:
+        new_exercise = Exercise(
+            question=data["question"],
+            options=data.get("options"),                # Poate fi None
+            correct_option=data.get("correct_option"),  # Poate fi None
+            correct_answer=data.get("correct_answer"),  # Poate fi None
+            type=data["type"],
+            difficulty=data["difficulty"]
+        )
+
+        db.session.add(new_exercise)
+        db.session.commit()
+
+        return {"message": "Exercițiul a fost adăugat cu succes.", "status": "success", "exercise": new_exercise.to_dict()}, 201
+    
+    except Exception as e:
+        return {"message": "Eroare la adăugarea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+
+
+
+
+
+@app.route('/api/reviewer/exercises/<int:exercise_id>', methods=['DELETE'])
+def delete_exercise(exercise_id):
+    try:
+       
+        print(f"Attempting to delete exercise with ID: {exercise_id}")
+
+       
+        exercise = Exercise.query.get(exercise_id)
+        if not exercise:
+            print(f"Exercise with ID {exercise_id} not found.")  # Debugging
+            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
+
+      
+        db.session.delete(exercise)
+        db.session.commit()
+
+        print(f"Exercise with ID {exercise_id} deleted successfully.")  # Debugging
+        return {"message": "Exercițiul a fost șters cu succes.", "status": "success"}, 200
+    
+    except Exception as e:
+      
+        print(f"Error deleting exercise with ID {exercise_id}: {e}")
+        return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+
+
 
 @app.route('/api/answer', methods=['POST'])
 def submit_answer():
