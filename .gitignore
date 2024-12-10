@@ -28,4 +28,48 @@ venv/
 *.pyc
 *.pyo
 # Environment variables
+.env# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+
+# Environment variables
 .env
+
+# IDE/Editor settings
+*.swp
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database files
+*.db
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+
+# Environment variables
+.env
+
+# IDE/Editor settings
+*.swp
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database files
+*.db
+

@@ -5,17 +5,15 @@ import "../styles/Questions.css";
 
 function Questions() {
     const { user } = useContext(AuthContext);
-    const [difficulty, setDifficulty] = useState("easy");
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [sessionQuestions, setSessionQuestions] = useState([]);
     const [answer, setAnswer] = useState(null);
     const [feedback, setFeedback] = useState("");
     const [xp, setXp] = useState(0);
-    const [dragItems, setDragItems] = useState([]); // Cuvintele plasate
-    const [availableWords, setAvailableWords] = useState([]); // Cuvintele disponibile pentru drag-and-drop
+    const [dragItems, setDragItems] = useState([]); // Words placed in drag-and-drop
+    const [availableWords, setAvailableWords] = useState([]); // Available words for drag-and-drop
     const [responses, setResponses] = useState({}); // Tracks responses and correctness
-
 
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
@@ -23,20 +21,18 @@ function Questions() {
         try {
             const response = await api.post("/questions", {
                 user_id: user.id,
-                difficulty,
+                difficulty: user.difficulty, // Use the user's difficulty level
                 session_questions: sessionQuestions,
             });
             setQuestions(response.data.questions);
             setCurrentQuestion(0);
             setFeedback("");
-            setAnswer(null); // Resetăm răspunsul
+            setAnswer(null); // Reset answer
             setResponses({});
-
-
             setDragItems([]);
-            setAvailableWords([]); // Resetăm pentru următoarea întrebare
+            setAvailableWords([]); // Reset for the next question
         } catch (error) {
-            console.error("Eroare la obținerea întrebărilor:", error);
+            console.error("Error fetching questions:", error);
         }
     };
 
@@ -45,10 +41,9 @@ function Questions() {
         let formattedAnswer = answer;
 
         if (question.type === "rearrange") {
-            formattedAnswer = dragItems.join(" "); // Creăm propoziția din elementele drag-and-drop
+            formattedAnswer = dragItems.join(" "); // Create the sentence from drag-and-drop items
         }
-        
-      
+
         try {
             const response = await api.post("/answer", {
                 user_id: user.id,
@@ -57,23 +52,24 @@ function Questions() {
             });
             const isCorrect = response.data.correct;
             const correctAnswer =
-            question.type === "fill_blank"
-                ? question.options[question.correct_option] // Folosim opțiunea corectă
-                : question.correct_answer;
-            setFeedback(isCorrect ? "Corect!" : `Greșit! Răspuns corect: ${correctAnswer}`);
+                question.type === "fill_blank"
+                    ? question.options[question.correct_option]
+                    : question.correct_answer;
+            setFeedback(
+                isCorrect
+                    ? "Correct!"
+                    : `Incorrect! Correct answer: ${correctAnswer}`
+            );
             if (isCorrect) {
                 setXp((prevXp) => prevXp + response.data.xp);
             }
-           
             setSessionQuestions((prev) => [...prev, question.id]);
             setResponses((prev) => ({
                 ...prev,
                 [currentQuestion]: { correct: isCorrect, answer: formattedAnswer },
             }));
-
-            
         } catch (error) {
-            console.error("Eroare la trimiterea răspunsului:", error);
+            console.error("Error submitting answer:", error);
         }
     };
 
@@ -130,7 +126,6 @@ function Questions() {
         }
     };
     
-    
     const handleDragOver = (e) => {
         e.preventDefault();
     };
@@ -157,8 +152,6 @@ function Questions() {
             })}
         </div>
     );
-    
-
 
     const renderQuestionOptions = (question) => {
         if (question.type === "multiple_choice" || question.type === "fill_blank") {
@@ -243,43 +236,48 @@ function Questions() {
 
     return (
         <div className="container">
-        <h2>Exerciții</h2>
-        <label htmlFor="difficulty">Selectează dificultatea:</label>
-        <select
-            id="difficulty"
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-        >
-            <option value="easy">Ușor</option>
-            <option value="medium">Mediu</option>
-            <option value="hard">Greu</option>
-        </select>
-        <button onClick={fetchQuestions}>Încarcă întrebări</button>
-        <p>XP: {xp}</p>
-        {questions.length > 0 && (
-            <>
-                {renderQuestionIndicators()}
-                <div>
-                    <p>{questions[currentQuestion].question}</p>
-                    {renderQuestionOptions(questions[currentQuestion])}
-                    <div className="actions">
-                        <button onClick={submitAnswer}>Trimite răspunsul</button>
-                        <button onClick={handlePrevious} disabled={currentQuestion === 0}>
-                            Întrebarea anterioară
-                        </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={currentQuestion === questions.length - 1}
-                        >
-                            Întrebarea următoare
-                        </button>
+            <h2>Exercises</h2>
+            <button onClick={fetchQuestions}>Load Questions</button>
+            <p>XP: {xp}</p>
+            {questions.length > 0 && (
+                <>
+                    {renderQuestionIndicators()}
+                    <div>
+                        <p>{questions[currentQuestion].question}</p>
+                        {questions[currentQuestion].translation && (
+                            <p className="translation">
+                                {questions[currentQuestion].translation}
+                            </p>
+                        )}
+                        {renderQuestionOptions(questions[currentQuestion])}
+                        <div className="actions">
+                            <button onClick={submitAnswer}>Submit Answer</button>
+                            <button
+                                onClick={handlePrevious}
+                                disabled={currentQuestion === 0}
+                            >
+                                Previous Question
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                disabled={currentQuestion === questions.length - 1}
+                            >
+                                Next Question
+                            </button>
+                        </div>
+                        {feedback && (
+                            <p
+                                className={`feedback ${
+                                    feedback.includes("Correct") ? "correct" : "incorrect"
+                                }`}
+                            >
+                                {feedback}
+                            </p>
+                        )}
                     </div>
-                    {feedback && <p className={`feedback ${feedback.includes("Corect") ? "correct" : "incorrect"}`}>{feedback}</p>}
-                </div>
-            </>
-        )}
-    </div>
-    
+                </>
+            )}
+        </div>
     );
 }
 

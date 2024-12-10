@@ -6,7 +6,8 @@ function Register() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("User"); // Rol implicit
+    const [role, setRole] = useState("User"); // Default role
+    const [difficulty, setDifficulty] = useState("easy"); // Default difficulty
     const [message, setMessage] = useState("");
     const { login } = useContext(AuthContext);
 
@@ -18,17 +19,18 @@ function Register() {
                 username,
                 email,
                 password,
-                role, // Trimitem rolul selectat
+                role,
+                difficulty, // Send difficulty to the backend
             });
             if (response.data.status === "success") {
-                login(response.data.user); // Loghează utilizatorul imediat după înregistrare
-                setMessage("Înregistrare reușită!");
+                login(response.data.user); // Log in the user immediately after registration
+                setMessage("Registration successful!");
             } else {
                 setMessage(response.data.message);
             }
         } catch (error) {
             setMessage(
-                error.response?.data?.message || "Eroare la conectarea cu serverul."
+                error.response?.data?.message || "Error connecting to the server."
             );
         }
     };
@@ -52,18 +54,30 @@ function Register() {
                 />
                 <br />
                 <input
-                    type="password"
+                    type="text"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
                 <br />
                 <label>
-                    Selectați Rolul:
+                    Select Role:
                     <select value={role} onChange={(e) => setRole(e.target.value)}>
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                         <option value="reviewer">Reviewer</option>
+                    </select>
+                </label>
+                <br />
+                <label>
+                    Select Difficulty:
+                    <select
+                        value={difficulty}
+                        onChange={(e) => setDifficulty(e.target.value)}
+                    >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
                     </select>
                 </label>
                 <br />

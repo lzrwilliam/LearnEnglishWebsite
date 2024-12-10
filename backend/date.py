@@ -57,7 +57,7 @@ def populate_exercises():
         # Rearrange Exercises
         {
             "question": "Rearanjează cuvintele pentru propoziția: 'The boy is reading a book.'",
-            "options": None,
+            "options": [],
             "correct_option": None,
             "correct_answer": "The boy is reading a book",
             "type": "rearrange",
@@ -65,7 +65,7 @@ def populate_exercises():
         },
         {
             "question": "Rearanjează cuvintele pentru propoziția: 'Learning English is fun and rewarding.'",
-            "options": None,
+            "options": [],
             "correct_option": None,
             "correct_answer": "Learning English is fun and rewarding",
             "type": "rearrange",
@@ -73,7 +73,7 @@ def populate_exercises():
         },
         {
             "question": "Rearanjează cuvintele pentru propoziția: 'Practice makes perfect in everything.'",
-            "options": None,
+            "options": [],
             "correct_option": None,
             "correct_answer": "Practice makes perfect in everything",
             "type": "rearrange",
@@ -111,18 +111,68 @@ def populate_exercises():
             "question": "Choose the correct verb form: 'He ___ playing football.'",
             "options": ["is", "are", "am"],
             "correct_option": 0,
-            "correct_answer": None,
+            "correct_answer": "is",
             "type": "multiple_choice",
             "difficulty": "easy"
+        },
+        
+        # Translation Questions
+        {
+            "question": "I went to the park yesterday.",
+            "translation": "Care este traducerea cuvântului 'park'?",
+            "options": ["parc", "parcare", "teren"],
+            "correct_option": 0,
+            "correct_answer": "parc",
+            "type": "multiple_choice",
+            "difficulty": "easy"
+        },
+        {
+            "question": "She wore a beautiful dress for the party.",
+            "translation": "Care este traducerea cuvântului 'dress'?",
+            "options": ["rochie", "costum", "tricou"],
+            "correct_option": 0,
+            "correct_answer": "rochie",
+            "type": "multiple_choice",
+            "difficulty": "medium"
+        },
+        {
+            "question": "We have not seen that movie yet.",
+            "translation": "Care este traducerea cuvântului 'movie'?",
+            "options": ["film", "carte", "piesă"],
+            "correct_option": 0,
+            "correct_answer": "film",
+            "type": "multiple_choice",
+            "difficulty": "hard"
+        },
+        {
+            "question": "The children were playing outside all day.",
+            "translation": "Care este traducerea cuvântului 'children'?",
+            "options": ["copii", "prieteni", "tineri"],
+            "correct_option": 0,
+            "correct_answer": "copii",
+            "type": "multiple_choice",
+            "difficulty": "medium"
+        },
+        {
+            "question": "I have never seen such a beautiful sunset.",
+            "translation": "Care este traducerea cuvântului 'sunset'?",
+            "options": ["apus", "răsărit", "peisaj"],
+            "correct_option": 0,
+            "correct_answer": "apus",
+            "type": "multiple_choice",
+            "difficulty": "hard"
         }
     ]
 
     with app.app_context():
-        print("Populare baza de date...")  # Log pentru depanare
+        print("Populare baza de date...")
         for exercise in exercises:
-            print(f"Adaug întrebarea: {exercise['question']}")  # Log întrebări
-            new_exercise = Exercise(**exercise)
-            db.session.add(new_exercise)
+            try:
+                print(f"Adaug întrebarea: {exercise['question']}")
+                new_exercise = Exercise(**exercise)
+                db.session.add(new_exercise)
+            except Exception as e:
+                print(f"Error adding question {exercise['question']}: {e}")
         db.session.commit()
         print("Exercițiile au fost adăugate cu succes!")
 

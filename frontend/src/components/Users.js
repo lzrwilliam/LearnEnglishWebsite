@@ -86,54 +86,57 @@ function Users() {
             <h2>Admin - Gestionare Utilizatori</h2>
             {message && <p>{message}</p>}
             <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Stare</th>
-                        <th>Acțiuni</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id}>
-                            <td>{user.id}</td>
-                            <td>{user.username}</td>
-                            <td>{user.email}</td>
-                            <td>{user.role}</td>
-                            <td>{user.is_banned ? "Banat" : "Activ"}</td>
-                            <td>
-                                {user.is_banned ? (
-                                    <button
-                                        className="unban-btn"
-                                        onClick={() => handleUnban(user.id)}
-                                    >
-                                        Unban
-                                    </button>
-                                ) : (
-                                    <button
-                                        className="ban-btn"
-                                        onClick={() => {
-                                            setUserToBan(user.id);
-                                            setBanReason("");
-                                        }}
-                                    >
-                                        Ban
-                                    </button>
-                                )}
-                                <button
-                                    className="kick-btn"
-                                    onClick={() => handleKick(user.id)}
-                                >
-                                    Kick
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>XP</th> {/* Change this */}
+            <th>Stare</th>
+            <th>Acțiuni</th>
+        </tr>
+    </thead>
+    <tbody>
+        {users.map((user) => (
+            <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>{user.role}</td>
+                <td>{user.xp || 0}</td> {/* Display XP here */}
+                <td>{user.is_banned ? "Banat" : "Activ"}</td>
+                <td>
+                    {user.is_banned ? (
+                        <button
+                            className="unban-btn"
+                            onClick={() => handleUnban(user.id)}
+                        >
+                            Unban
+                        </button>
+                    ) : (
+                        <button
+                            className="ban-btn"
+                            onClick={() => {
+                                setUserToBan(user.id);
+                                setBanReason("");
+                            }}
+                        >
+                            Ban
+                        </button>
+                    )}
+                    <button
+                        className="kick-btn"
+                        onClick={() => handleKick(user.id)}
+                    >
+                        Kick
+                    </button>
+                </td>
+            </tr>
+        ))}
+    </tbody>
+</table>
+
             {userToBan && (
                 <div>
                     <h3>Banează utilizator</h3>
