@@ -16,12 +16,12 @@ function Login() {
 
         try {
             const response = await api.post("/login", { username, password });
-            if (response.data.status === "success") {
+
+            if (response.data.status === "success")
                 login(response.data.user, remember);
-                window.location.href = "/";
-            } else {
+            else
                 setMessage(response.data.message);
-            }
+            
         } catch (error) {
             setMessage(
                 error.response?.data?.message || "Eroare la conectarea cu serverul."

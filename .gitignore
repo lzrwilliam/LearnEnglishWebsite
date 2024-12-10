@@ -73,3 +73,4 @@ venv/
 # Database files
 *.db
 
+./backend/config.json

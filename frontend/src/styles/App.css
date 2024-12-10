@@ -3,4 +3,9 @@
     flex-direction: column;
     align-items: center;
     margin-inline: 200px;
+    padding-top: 80px;
+}
+
+br {
+    user-select: none;
 }

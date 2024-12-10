@@ -95,6 +95,7 @@ function Questions() {
 
     const handleDrop = (e, targetIndex = null, target = "dragItems") => {
         e.preventDefault();
+        e.stopPropagation();
         const word = e.dataTransfer.getData("word");
         const source = e.dataTransfer.getData("source");
         const index = parseInt(e.dataTransfer.getData("index"), 10);
@@ -103,6 +104,7 @@ function Questions() {
             // Mutăm cuvântul din zona de răspuns în lista disponibilă
             setDragItems((prev) => prev.filter((_, i) => i !== index));
             setAvailableWords((prev) => [...prev, word]); // Adăugăm în zona inițială
+
         } else if (source === "available" && target === "dragItems") {
             // Mutăm cuvântul din lista disponibilă în zona de răspuns
             setAvailableWords((prev) => prev.filter((_, i) => i !== index));
@@ -189,6 +191,7 @@ function Questions() {
                     <p className="instruction">Drag-and-drop pentru a rearanja propoziția:</p>
                     
                     {/* Available Words */}
+                    
                     <div
     className="drag-area available-words"
     onDrop={(e) => handleDrop(e, null, "available")} // Permite adăugarea înapoi
@@ -209,9 +212,10 @@ function Questions() {
                     
         
                     {/* Drop Zone */}
+                    <br/>
                     <div
                         className="drag-area answer-zone"
-                        onDrop={(e) => handleDrop(e, dragItems.length, "dragItems")}
+                        onDrop={(e) => handleDrop(e, null, "dragItems")}
                         onDragOver={handleDragOver}
                     >
                         {dragItems.map((word, index) => (
@@ -237,7 +241,7 @@ function Questions() {
     return (
         <div className="container">
             <h2>Exercises</h2>
-            <button onClick={fetchQuestions}>Load Questions</button>
+            <button onClick={fetchQuestions} className="login-btn">Start</button>
             <p>XP: {xp}</p>
             {questions.length > 0 && (
                 <>

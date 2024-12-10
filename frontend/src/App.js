@@ -31,6 +31,8 @@ function App() {
             localStorage.setItem("user", JSON.stringify(userData));
         else
             sessionStorage.setItem("user", JSON.stringify(userData));
+
+        window.location.href = "/questions";
     };
 
     const logout = () => {
@@ -45,66 +47,55 @@ function App() {
     return (
         <AuthContext.Provider value={{ user, login, logout }}>
             <BrowserRouter>
-                <div className="navbar">
-                    <nav>
-                        {!user ? (
-                            <>
-                                <Link to="/login" className="nav-link">Login</Link>
-                                <Link to="/register" className="nav-link">Register</Link>
-                            </>
-                        ) : (
-                            <>
-                                <Link to="/questions" className="nav-link">Întrebări</Link>
-                                {user.role === "admin" && (
-                                    <div className="dropdown">
-                                        <button className="dropdown-button">Admin</button>
-                                        <div className="dropdown-content">
-                                            <Link to="/admin/exercises" className="nav-link">Exerciții</Link>
-                                            <Link to="/admin/users" className="nav-link">Utilizatori</Link>
-                                            <Link to="/admin/requests" className="nav-link">Solicitări</Link>
+                {user && (
+                    <div className="navbar">
+                        <nav>
+                            <Link to="/questions" className="nav-link">Întrebări</Link>
+                            {user.role === "admin" && (
+                                <div className="dropdown">
+                                    <button className="dropdown-button">Admin</button>
+                                    <div className="dropdown-content">
+                                        <Link to="/admin/exercises" className="nav-link">Exerciții</Link>
+                                        <Link to="/admin/users" className="nav-link">Utilizatori</Link>
+                                        <Link to="/admin/requests" className="nav-link">Solicitări</Link>
 
-                                        </div>
                                     </div>
-                                )}
-                                   {user.role === "reviewer" && (
-                                    <div className="dropdown">
-                                        <button className="dropdown-button">Reviewer</button>
-                                        <div className="dropdown-content">
-                                            <Link to="/reviewer/exercises" className="nav-link">Exerciții</Link>
-                                        </div>
+                                </div>
+                            )}
+                            {user.role === "reviewer" && (
+                                <div className="dropdown">
+                                    <button className="dropdown-button">Reviewer</button>
+                                    <div className="dropdown-content">
+                                        <Link to="/reviewer/exercises" className="nav-link">Exerciții</Link>
                                     </div>
-                                )}
-                                <button className="logout" onClick={logout}>Sign Out</button>
-                            </>
-                        )}
-                    </nav>
-                </div>
+                                </div>
+                            )}
+                            <button className="logout" onClick={logout}>Sign Out</button>
+                        </nav>
+                    </div>
+                )}
                 <div className="content">
                     <Routes>
                         <Route path="/" element={user ? <Navigate to="/questions" /> : <Navigate to="/login" />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={ <Register />} />
                         
-                    { user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />
-                    )}
+                        {user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />)}
                 
-                        <Route
-                            path="/questions"
-                            element={
-                                <ProtectedRoute>
-                                    <Questions />
-                                </ProtectedRoute>
-                            }
-                        />
+                        <Route path="/questions" element={<ProtectedRoute><Questions/></ProtectedRoute>}/>
+
                         {user?.role === "admin" && (
                             <Route path="/admin/exercises" element={ <Admin />} />
                         )}
+                        
                         {user?.role === "admin" && (
                             <Route path="/admin/users" element={<Users/>}  />
                         )}
+
                         {user?.role === "reviewer" && (
                             <Route path="/reviewer/exercises" element={<Reviewer />} />
                         )}
+                        
                     </Routes>
                 </div>
             </BrowserRouter>
