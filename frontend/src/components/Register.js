@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
 import "../styles/Login.css";
+import { Link } from "react-router-dom";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -40,51 +41,41 @@ function Register() {
         <div className="login">
             <h2>Register</h2>
             <form onSubmit={handleRegister}>
+                <label>Username</label>
                 <input
                     type="text"
-                    placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <br />
+                <label>Email</label>
                 <input
                     type="email"
-                    placeholder="Email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
-                <br />
+                <label>Password</label>
                 <input
                     type="text"
-                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
+                <label>Role</label>
+                <select value={role} onChange={(e) => setRole(e.target.value)}>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="reviewer">Reviewer</option>
+                </select>
+                <label>Difficulty</label>
+                <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
                 <br />
-                <label>
-                    Select Role:
-                    <select value={role} onChange={(e) => setRole(e.target.value)}>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                        <option value="reviewer">Reviewer</option>
-                    </select>
-                </label>
-                <br />
-                <label>
-                    Select Difficulty:
-                    <select
-                        value={difficulty}
-                        onChange={(e) => setDifficulty(e.target.value)}
-                    >
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
-                </label>
-                <br />
-                <button type="submit">Register</button>
+                <button type="submit" className="login-btn">Register</button>
+                <p className="less-visible">Already have an account? <Link to="/login" className="link">Log in</Link></p>
             </form>
-            {message && <p>{message}</p>}
+            {message && <p className="error">{message}</p>}
         </div>
     );
 }

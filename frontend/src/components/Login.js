@@ -2,11 +2,13 @@ import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
 import "../styles/Login.css";
+import { Link } from "react-router-dom";
 
 function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [remember, setRemember] = useState(false);
     const { login } = useContext(AuthContext);
 
     const handleLogin = async (e) => {
@@ -15,7 +17,7 @@ function Login() {
         try {
             const response = await api.post("/login", { username, password });
             if (response.data.status === "success") {
-                login(response.data.user);
+                login(response.data.user, remember);
                 window.location.href = "/";
             } else {
                 setMessage(response.data.message);
@@ -31,23 +33,28 @@ function Login() {
         <div className="login">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
+                <label>Username</label>
                 <input
                     type="text"
-                    placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                 />
-                <br />
+                <label>Password</label>
                 <input
                     type="text"
-                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <br />
-                <button type="submit">Login</button>
+                <br/>
+                <div className="rem-me">
+                    <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}/>
+                    <label>Remember me</label>
+                </div>
+                <button type="submit" className="login-btn">Login</button>
+                <p className="less-visible">Don't have an account yet? <Link to="/register" className="link">Register now!</Link></p>
+                {/* <Link to="/register"><button>Register</button></Link> */}
             </form>
-            {message && <p>{message}</p>}
+            {message && <p className="error">{message}</p>}
         </div>
     );
 }

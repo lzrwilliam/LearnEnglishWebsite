@@ -98,39 +98,26 @@ function Users() {
         </tr>
     </thead>
     <tbody>
-        {users.map((user) => (
-            <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.role}</td>
-                <td>{user.xp || 0}</td> {/* Display XP here */}
-                <td>{user.is_banned ? "Banat" : "Activ"}</td>
+        {users.map((u) => (
+            <tr key={u.id}>
+                <td>{u.id}</td>
+                <td>{u.username}</td>
+                <td>{u.email}</td>
+                <td>{u.role}</td>
+                <td>{u.xp || 0}</td> {/* Display XP here */}
+                <td>{u.is_banned ? "Banat" : "Activ"}</td>
                 <td>
-                    {user.is_banned ? (
-                        <button
-                            className="unban-btn"
-                            onClick={() => handleUnban(user.id)}
-                        >
-                            Unban
-                        </button>
-                    ) : (
-                        <button
-                            className="ban-btn"
-                            onClick={() => {
-                                setUserToBan(user.id);
-                                setBanReason("");
-                            }}
-                        >
-                            Ban
-                        </button>
+                    {u.id !== user.id && u.is_banned && (
+                        <button className="unban-btn" onClick={() => handleUnban(u.id)}>Unban</button>
                     )}
-                    <button
-                        className="kick-btn"
-                        onClick={() => handleKick(user.id)}
-                    >
-                        Kick
-                    </button>
+
+                    {u.id !== user.id && !u.is_banned && (
+                        <button className="ban-btn" onClick={() => {setUserToBan(u.id); setBanReason("");}}>Ban</button>
+                    )}
+
+                    {u.id !== user.id && (
+                        <button className="kick-btn" onClick={() => handleKick(u.id)}>Kick</button>
+                    )}
                 </td>
             </tr>
         ))}

@@ -16,18 +16,29 @@ export const AuthContext = createContext();
 
 function App() {
     const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem("user");
+        var savedUser = sessionStorage.getItem("user");
+
+        if (savedUser == null)
+            savedUser = localStorage.getItem("user");
+
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
-    const login = (userData) => {
+    const login = (userData, remember) => {
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+
+        if (remember)
+            localStorage.setItem("user", JSON.stringify(userData));
+        else
+            sessionStorage.setItem("user", JSON.stringify(userData));
     };
 
     const logout = () => {
         setUser(null);
+
         localStorage.removeItem("user");
+        sessionStorage.removeItem("user");
+
         window.location.href = "/login";
     };
 
