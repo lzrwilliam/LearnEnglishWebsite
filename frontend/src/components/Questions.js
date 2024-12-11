@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
 
@@ -12,6 +12,10 @@ function Questions({updateXp}) {
     const [dragItems, setDragItems] = useState([]); // Words placed in drag-and-drop
     const [availableWords, setAvailableWords] = useState([]); // Available words for drag-and-drop
     const [responses, setResponses] = useState({}); // Tracks responses and correctness
+    const [reportMessage, setReportMessage] = useState("");
+    const [hasActiveRequest, setHasActiveRequest] = useState(false); // verifi daca user a facut cerere pt ex curent
+
+
 
     const [userResponses, setUserResponses] = useState({}); // sa mentinem raspunsurile utilizatorului la intrb raspunse cand navigheaza prin intrebari
 
@@ -35,6 +39,48 @@ function Questions({updateXp}) {
             console.error("Error fetching questions:", error);
         }
     };
+
+    const checkActiveRequest = async () => {
+        try {
+            const exerciseId = questions[currentQuestion]?.id;
+            if (!exerciseId) return;
+
+            const response = await api.get(
+                `/reviewer_requests?user_id=${user.id}&exercise_id=${exerciseId}`
+            );
+            setHasActiveRequest(response.data.hasActiveRequest);
+        } catch (error) {
+            console.error("Error checking active request:", error);
+        }
+    };
+
+    // Trimiterea unei cereri de review
+    const submitReport = async () => {
+        if (!reportMessage.trim()) {
+            alert("Mesajul nu poate fi gol!");
+            return;
+        }
+        try {
+            await api.post("/reviewer_requests", {
+                user_id: user.id,
+                exercise_id: questions[currentQuestion].id,
+                message: reportMessage,
+            });
+            alert("Solicitarea ta a fost trimisă.");
+            setReportMessage("");
+            setHasActiveRequest(true); // Marchez cererea ca activă
+        } catch (error) {
+            console.error("Error submitting report:", error);
+        }
+    };
+
+    
+    useEffect(() => {
+        if (questions.length > 0) {
+            checkActiveRequest();
+        }
+    }, [currentQuestion, questions]);
+
 
     const submitAnswer = async () => {
         const question = questions[currentQuestion];
@@ -81,6 +127,8 @@ function Questions({updateXp}) {
             console.error("Error submitting answer:", error);
         }
     };
+
+    
 
     const handleNext = () => {
         setFeedback("");
@@ -264,91 +312,65 @@ function Questions({updateXp}) {
     };
 
     return (
-        <>
-            <div className="questions-start">
-                <button onClick={fetchQuestions} className="accent-btn">Start</button>
-            </div>
-
-            { questions.length > 0  && (
-                <div className="question">
-                    <p>{questions[currentQuestion].question}</p>
-                    {questions[currentQuestion].translation && (
-                        <p className="translation">
-                            {questions[currentQuestion].translation}
-                        </p>
-                    )}
-                    {renderQuestionOptions(questions[currentQuestion])}
-                    <div className="actions">
-                        <button onClick={submitAnswer} className="accent-btn">Sumbit</button>
+        <div className="questions-start">
+            <h2>Exercises</h2>
+            <button onClick={fetchQuestions} className="accent-btn">Start</button>
+            
+            {questions.length > 0 && (
+                <>
+                    {renderQuestionIndicators()}
+                    <div>
+                        <p>{questions[currentQuestion].question}</p>
+                        <textarea
+                            placeholder={
+                                hasActiveRequest
+                                    ? "Ai trimis deja o cerere pentru acest exercițiu."
+                                    : "Scrie un mesaj pentru reviewer..."
+                            }
+                            value={reportMessage}
+                            onChange={(e) => setReportMessage(e.target.value)}
+                            disabled={hasActiveRequest} 
+                        />
                         <button
-                            onClick={handlePrevious}
-                            disabled={currentQuestion === 0}
+                            onClick={submitReport}
+                            disabled={hasActiveRequest} 
                         >
-                            Previous Question
+                            Trimite Review
                         </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={currentQuestion === questions.length - 1}
-                        >
-                            Next Question
-                        </button>
+                        {questions[currentQuestion].translation && (
+                            <p className="translation">
+                                {questions[currentQuestion].translation}
+                            </p>
+                        )}
+                        {renderQuestionOptions(questions[currentQuestion])}
+                        <div className="actions">
+                            <button onClick={submitAnswer}>Submit Answer</button>
+                            <button
+                                onClick={handlePrevious}
+                                disabled={currentQuestion === 0}
+                            >
+                                Previous Question
+                            </button>
+                            <button
+                                onClick={handleNext}
+                                disabled={currentQuestion === questions.length - 1}
+                            >
+                                Next Question
+                            </button>
+                        </div>
+                        {feedback && (
+                            <p
+                                className={`feedback ${
+                                    feedback.includes("Correct") ? "correct" : "incorrect"
+                                }`}
+                            >
+                                {feedback}
+                            </p>
+                        )}
                     </div>
-                    {feedback && (
-                        <p
-                            className={`feedback ${
-                                feedback.includes("Correct") ? "correct" : "incorrect"
-                            }`}
-                        >
-                            {feedback}
-                        </p>
-                    )}
-                </div>
-        )}
-    </>
+                </>
+            )}
+        </div>
     );
-    //     <div className="container">
-    //         <h2>Exercises</h2>
-    //         <button onClick={fetchQuestions} className="login-btn">Start</button>
-    //         {questions.length > 0 && (
-    //             <>
-    //                 {renderQuestionIndicators()}
-    //                 <div>
-    //                     <p>{questions[currentQuestion].question}</p>
-    //                     {questions[currentQuestion].translation && (
-    //                         <p className="translation">
-    //                             {questions[currentQuestion].translation}
-    //                         </p>
-    //                     )}
-    //                     {renderQuestionOptions(questions[currentQuestion])}
-    //                     <div className="actions">
-    //                         <button onClick={submitAnswer}>Submit Answer</button>
-    //                         <button
-    //                             onClick={handlePrevious}
-    //                             disabled={currentQuestion === 0}
-    //                         >
-    //                             Previous Question
-    //                         </button>
-    //                         <button
-    //                             onClick={handleNext}
-    //                             disabled={currentQuestion === questions.length - 1}
-    //                         >
-    //                             Next Question
-    //                         </button>
-    //                     </div>
-    //                     {feedback && (
-    //                         <p
-    //                             className={`feedback ${
-    //                                 feedback.includes("Correct") ? "correct" : "incorrect"
-    //                             }`}
-    //                         >
-    //                             {feedback}
-    //                         </p>
-    //                     )}
-    //                 </div>
-    //             </>
-    //         )}
-    //     </div>
-    // );
 }
-
 export default Questions;
