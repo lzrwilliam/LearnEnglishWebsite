@@ -8,8 +8,6 @@ import Admin from "./components/Admin";
 import Requests from "./components/Requests";
 
 import ProtectedRoute from "./components/ProtectedRoute"; // Importăm ruta protejată
-import "./styles/Navbar.css";
-import "./styles/App.css";
 import Reviewer from "./components/Reviewer";
 
 export const AuthContext = createContext();
@@ -48,30 +46,29 @@ function App() {
         <AuthContext.Provider value={{ user, login, logout }}>
             <BrowserRouter>
                 {user && (
-                    <div className="navbar">
-                        <nav>
-                            <Link to="/questions" className="nav-link">Întrebări</Link>
-                            {user.role === "admin" && (
-                                <div className="dropdown">
-                                    <button className="dropdown-button">Admin</button>
-                                    <div className="dropdown-content">
-                                        <Link to="/admin/exercises" className="nav-link">Exerciții</Link>
-                                        <Link to="/admin/users" className="nav-link">Utilizatori</Link>
-                                        <Link to="/admin/requests" className="nav-link">Solicitări</Link>
-
-                                    </div>
+                    <div className="menu">
+                        <div className="menu-top">
+                            <div className="pfp"></div>
+                            <p className="username">{user.role === "admin" ? "💎" : (user.role === "reviewer" ? "👀" : "")} {user.username}</p>
+                        </div>
+                        <div className="menu-middle">
+                            <div className="level-container">
+                                <div className="level">Level {Math.floor(user.xp / 100)}</div>
+                                <div className="xp">
+                                    <div className="xp-fill" style={{width: `${user.xp % 100}%`}}></div>
                                 </div>
-                            )}
-                            {user.role === "reviewer" && (
-                                <div className="dropdown">
-                                    <button className="dropdown-button">Reviewer</button>
-                                    <div className="dropdown-content">
-                                        <Link to="/reviewer/exercises" className="nav-link">Exerciții</Link>
-                                    </div>
-                                </div>
-                            )}
-                            <button className="logout" onClick={logout}>Sign Out</button>
-                        </nav>
+                            </div>
+                            <p>{100 - (user.xp % 100)} xp away from reaching level {Math.floor(user.xp / 100) + 1}</p>
+                        </div>
+                        <div className="menu-options">
+                            <Link to="/questions" className="nav-link">Exercises</Link>
+                            <Link to="/leaderboards" className="nav-link">Leaderboards</Link>
+                            {user.role === "admin" && (<Link to="/admin/exercises" className="nav-link">Exerciții</Link>)}
+                            {user.role === "admin" && (<Link to="/admin/users" className="nav-link">Utilizatori</Link>)}
+                            {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">Solicitări</Link>)}
+                            {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">Exerciții</Link>)}
+                            <Link onClick={logout}>Sign Out</Link>
+                        </div>
                     </div>
                 )}
                 <div className="content">

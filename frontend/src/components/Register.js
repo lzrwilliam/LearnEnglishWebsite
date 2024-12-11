@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
-import "../styles/Login.css";
 import { Link } from "react-router-dom";
 
 function Register() {
@@ -38,7 +37,7 @@ function Register() {
     };
 
     return (
-        <div className="login">
+        <div className="login-card">
             <h2>Register</h2>
             <form onSubmit={handleRegister}>
                 <label>Username</label>
@@ -55,7 +54,7 @@ function Register() {
                 />
                 <label>Password</label>
                 <input
-                    type="text"
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
@@ -71,11 +70,10 @@ function Register() {
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
                 </select>
-                <br />
-                <button type="submit" className="login-btn">Register</button>
-                <p className="less-visible">Already have an account? <Link to="/login" className="link">Log in</Link></p>
+                {message && <p className="error">{message}</p>}
+                <button type="submit" className="accent-btn">Register</button>
             </form>
-            {message && <p className="error">{message}</p>}
+            <p className="login-switch">Already have an account? <Link to="/login" className="link">Log in</Link></p>
         </div>
     );
 }

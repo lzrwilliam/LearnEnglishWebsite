@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import "../styles/Admin.css";
 
 function Admin() {
   const [exercises, setExercises] = useState([]);

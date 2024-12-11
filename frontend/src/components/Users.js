@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
-import "../styles/Users.css";
 
 function Users() {
     const { user } = useContext(AuthContext);

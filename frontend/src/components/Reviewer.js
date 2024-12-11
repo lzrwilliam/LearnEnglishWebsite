@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import api from "../api";
-import "../styles/Reviewer.css";
 
 function Reviewer() {
   const [exercises, setExercises] = useState([]);

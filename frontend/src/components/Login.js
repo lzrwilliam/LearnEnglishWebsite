@@ -1,7 +1,6 @@
 import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
-import "../styles/Login.css";
 import { Link } from "react-router-dom";
 
 function Login() {
@@ -30,7 +29,7 @@ function Login() {
     };
 
     return (
-        <div className="login">
+        <div className="login-card">
             <h2>Login</h2>
             <form onSubmit={handleLogin}>
                 <label>Username</label>
@@ -41,20 +40,19 @@ function Login() {
                 />
                 <label>Password</label>
                 <input
-                    type="text"
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <br/>
-                <div className="rem-me">
+                <div className="remember-me">
                     <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}/>
                     <label>Remember me</label>
                 </div>
-                <button type="submit" className="login-btn">Login</button>
-                <p className="less-visible">Don't have an account yet? <Link to="/register" className="link">Register now!</Link></p>
+                {message && <p className="error">{message}</p>}
+                <button type="submit" className="accent-btn">Login</button>
                 {/* <Link to="/register"><button>Register</button></Link> */}
             </form>
-            {message && <p className="error">{message}</p>}
+            <p className="login-switch">Don't have an account yet? <Link to="/register" className="link">Register now!</Link></p>
         </div>
     );
 }
