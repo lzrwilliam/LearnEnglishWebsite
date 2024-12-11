@@ -24,7 +24,7 @@ function Register() {
                 difficulty, // Send difficulty to the backend
             });
             if (response.data.status === "success") {
-                login(response.data.user); // Log in the user immediately after registration
+                login(response.data.user, false); // Log in the user immediately after registration
                 window.location.href = "/";
             } else {
                 setMessage(response.data.message);

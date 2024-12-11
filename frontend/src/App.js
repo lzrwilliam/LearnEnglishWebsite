@@ -1,4 +1,4 @@
-import React, { useState, createContext } from "react";
+import React, { useState, createContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -14,13 +14,20 @@ export const AuthContext = createContext();
 
 function App() {
     const [user, setUser] = useState(() => {
-        var savedUser = sessionStorage.getItem("user");
-
-        if (savedUser == null)
-            savedUser = localStorage.getItem("user");
-
+        var savedUser = sessionStorage.getItem("user") || localStorage.getItem("user");
         return savedUser ? JSON.parse(savedUser) : null;
     });
+
+    const updateXp = (newXp) => {
+        const updatedUser = { ...user, xp: newXp };
+
+        setUser(updatedUser);
+
+        if (localStorage.getItem("user"))
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+        else
+            sessionStorage.setItem("user", JSON.stringify(updatedUser));
+    };
 
     const login = (userData, remember) => {
         setUser(userData);
@@ -79,7 +86,7 @@ function App() {
                         
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />)}
                 
-                        <Route path="/questions" element={<ProtectedRoute><Questions/></ProtectedRoute>}/>
+                        <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
 
                         {user?.role === "admin" && (
                             <Route path="/admin/exercises" element={ <Admin />} />

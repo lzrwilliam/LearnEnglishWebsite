@@ -2,20 +2,18 @@ import React, { useState, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
 
-function Questions() {
+function Questions({updateXp}) {
     const { user } = useContext(AuthContext);
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [sessionQuestions, setSessionQuestions] = useState([]);
     const [answer, setAnswer] = useState(null);
     const [feedback, setFeedback] = useState("");
-    const [xp, setXp] = useState(0);
     const [dragItems, setDragItems] = useState([]); // Words placed in drag-and-drop
     const [availableWords, setAvailableWords] = useState([]); // Available words for drag-and-drop
     const [responses, setResponses] = useState({}); // Tracks responses and correctness
 
     const [userResponses, setUserResponses] = useState({}); // sa mentinem raspunsurile utilizatorului la intrb raspunse cand navigheaza prin intrebari
-
 
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
 
@@ -40,7 +38,6 @@ function Questions() {
 
     const submitAnswer = async () => {
         const question = questions[currentQuestion];
-
 
         if (responses[currentQuestion]?.submitted) {
             setFeedback("Ai răspuns deja la această întrebare.");
@@ -68,9 +65,9 @@ function Questions() {
                     ? "Correct!"
                     : `Incorrect! Correct answer: ${correctAnswer}`
             );
-            if (isCorrect) {
-                setXp((prevXp) => prevXp + response.data.xp);
-            }
+
+            updateXp(response.data.user_xp);
+
             setSessionQuestions((prev) => [...prev, question.id]);
             setResponses((prev) => ({
                 ...prev,
@@ -267,50 +264,91 @@ function Questions() {
     };
 
     return (
-        <div className="container">
-            <h2>Exercises</h2>
-            <button onClick={fetchQuestions} className="login-btn">Start</button>
-            <p>XP: {xp}</p>
-            {questions.length > 0 && (
-                <>
-                    {renderQuestionIndicators()}
-                    <div>
-                        <p>{questions[currentQuestion].question}</p>
-                        {questions[currentQuestion].translation && (
-                            <p className="translation">
-                                {questions[currentQuestion].translation}
-                            </p>
-                        )}
-                        {renderQuestionOptions(questions[currentQuestion])}
-                        <div className="actions">
-                            <button onClick={submitAnswer}>Submit Answer</button>
-                            <button
-                                onClick={handlePrevious}
-                                disabled={currentQuestion === 0}
-                            >
-                                Previous Question
-                            </button>
-                            <button
-                                onClick={handleNext}
-                                disabled={currentQuestion === questions.length - 1}
-                            >
-                                Next Question
-                            </button>
-                        </div>
-                        {feedback && (
-                            <p
-                                className={`feedback ${
-                                    feedback.includes("Correct") ? "correct" : "incorrect"
-                                }`}
-                            >
-                                {feedback}
-                            </p>
-                        )}
+        <>
+            <div className="questions-start">
+                <button onClick={fetchQuestions} className="accent-btn">Start</button>
+            </div>
+
+            { questions.length > 0  && (
+                <div className="question">
+                    <p>{questions[currentQuestion].question}</p>
+                    {questions[currentQuestion].translation && (
+                        <p className="translation">
+                            {questions[currentQuestion].translation}
+                        </p>
+                    )}
+                    {renderQuestionOptions(questions[currentQuestion])}
+                    <div className="actions">
+                        <button onClick={submitAnswer} className="accent-btn">Sumbit</button>
+                        <button
+                            onClick={handlePrevious}
+                            disabled={currentQuestion === 0}
+                        >
+                            Previous Question
+                        </button>
+                        <button
+                            onClick={handleNext}
+                            disabled={currentQuestion === questions.length - 1}
+                        >
+                            Next Question
+                        </button>
                     </div>
-                </>
-            )}
-        </div>
+                    {feedback && (
+                        <p
+                            className={`feedback ${
+                                feedback.includes("Correct") ? "correct" : "incorrect"
+                            }`}
+                        >
+                            {feedback}
+                        </p>
+                    )}
+                </div>
+        )}
+    </>
     );
+    //     <div className="container">
+    //         <h2>Exercises</h2>
+    //         <button onClick={fetchQuestions} className="login-btn">Start</button>
+    //         {questions.length > 0 && (
+    //             <>
+    //                 {renderQuestionIndicators()}
+    //                 <div>
+    //                     <p>{questions[currentQuestion].question}</p>
+    //                     {questions[currentQuestion].translation && (
+    //                         <p className="translation">
+    //                             {questions[currentQuestion].translation}
+    //                         </p>
+    //                     )}
+    //                     {renderQuestionOptions(questions[currentQuestion])}
+    //                     <div className="actions">
+    //                         <button onClick={submitAnswer}>Submit Answer</button>
+    //                         <button
+    //                             onClick={handlePrevious}
+    //                             disabled={currentQuestion === 0}
+    //                         >
+    //                             Previous Question
+    //                         </button>
+    //                         <button
+    //                             onClick={handleNext}
+    //                             disabled={currentQuestion === questions.length - 1}
+    //                         >
+    //                             Next Question
+    //                         </button>
+    //                     </div>
+    //                     {feedback && (
+    //                         <p
+    //                             className={`feedback ${
+    //                                 feedback.includes("Correct") ? "correct" : "incorrect"
+    //                             }`}
+    //                         >
+    //                             {feedback}
+    //                         </p>
+    //                     )}
+    //                 </div>
+    //             </>
+    //         )}
+    //     </div>
+    // );
 }
 
 export default Questions;

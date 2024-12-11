@@ -91,8 +91,6 @@ def login():
         "user": user.to_dict()
     }, 200
 
-
-
 @app.route('/api/register', methods=['POST'])
 def register():
 
@@ -341,9 +339,6 @@ def delete_exercise(exercise_id):
         print(f"Error deleting exercise with ID {exercise_id}: {e}")
         return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
 
-
-
-
 @app.route('/api/answer', methods=['POST'])
 def submit_answer():
     data = request.json
@@ -382,19 +377,19 @@ def submit_answer():
         if correct:
             xp = 20 if question.difficulty == 'easy' else 30 if question.difficulty == 'medium' else 40
 
-    if correct:
-        user = User.query.get(user_id)
-        if user:
-            user.xp += xp
-            db.session.commit()
+    user = User.query.get(user_id)
+    new_xp = 0
 
-    
+    if user and correct:
+        new_xp = user.xp + xp
+        user.xp = new_xp
+        db.session.commit()
+
     progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=correct)
     db.session.add(progress)
     db.session.commit()
 
-    return {"message": "Răspuns trimis.", "correct": correct, "xp": xp, "status": "success"}, 200
-
+    return {"message": "Răspuns trimis.", "correct": correct, "user_xp": new_xp, "status": "success"}, 200
 
 @app.route('/api/admin/update_role', methods=['POST'])
 def update_role():
