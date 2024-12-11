@@ -11,7 +11,8 @@ from sqlalchemy import and_
 from sqlalchemy.sql.expression import func
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 
 with open('config.json', 'r') as f:
     config = json.load(f)
