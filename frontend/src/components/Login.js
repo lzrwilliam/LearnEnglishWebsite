@@ -48,7 +48,7 @@ function Login() {
                     <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)}/>
                     <label>Remember me</label>
                 </div>
-                {message && <p className="error">{message}</p>}
+                {message && <p className="error">⚠️ {message}</p>}
                 <button type="submit" className="accent-btn">Login</button>
                 {/* <Link to="/register"><button>Register</button></Link> */}
             </form>

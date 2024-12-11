@@ -61,13 +61,13 @@ function App() {
                             <p>{100 - (user.xp % 100)} xp away from reaching level {Math.floor(user.xp / 100) + 1}</p>
                         </div>
                         <div className="menu-options">
-                            <Link to="/questions" className="nav-link">Exercises</Link>
-                            <Link to="/leaderboards" className="nav-link">Leaderboards</Link>
-                            {user.role === "admin" && (<Link to="/admin/exercises" className="nav-link">Exerciții</Link>)}
-                            {user.role === "admin" && (<Link to="/admin/users" className="nav-link">Utilizatori</Link>)}
-                            {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">Solicitări</Link>)}
-                            {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">Exerciții</Link>)}
-                            <Link onClick={logout}>Sign Out</Link>
+                            <Link to="/questions" className="nav-link">✏️ Exercises</Link>
+                            <Link to="/leaderboards" className="nav-link">🌍 Leaderboards</Link>
+                            {user.role === "admin" && (<Link to="/admin/exercises" className="nav-link">📖 Review</Link>)}
+                            {user.role === "admin" && (<Link to="/admin/users" className="nav-link">🔒 Users</Link>)}
+                            {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">✉️ Requests</Link>)}
+                            {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
+                            <Link onClick={logout}>↪ Sign out</Link>
                         </div>
                     </div>
                 )}

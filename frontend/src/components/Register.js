@@ -70,7 +70,7 @@ function Register() {
                     <option value="medium">Medium</option>
                     <option value="hard">Hard</option>
                 </select>
-                {message && <p className="error">{message}</p>}
+                {message && <p className="error">⚠️ {message}</p>}
                 <button type="submit" className="accent-btn">Register</button>
             </form>
             <p className="login-switch">Already have an account? <Link to="/login" className="link">Log in</Link></p>
