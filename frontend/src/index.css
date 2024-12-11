@@ -266,4 +266,5 @@ input[type="checkbox"], input[type="radio"] {
   background: var(--accent-color);
   height: 100%;
   border-radius: 4px;
+  transition: width 0.5s ease;
 }

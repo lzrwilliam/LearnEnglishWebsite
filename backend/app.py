@@ -119,13 +119,7 @@ def register():
     return {
         "message": "Înregistrare reușită!",
         "status": "success",
-        "user": {
-            "id": new_user.id,
-            "username": new_user.username,
-            "email": new_user.email,
-            "role": new_user.role,
-            "difficulty": new_user.difficulty,
-        }
+        "user": new_user.to_dict()
     }, 201
 
 @app.route('/api/admin/users', methods=['GET'])
