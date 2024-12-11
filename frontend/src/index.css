@@ -73,11 +73,14 @@ label {
 
 .accent-btn {
   background: var(--accent-color);
-  border: 1px solid var(--accent-border-color);
+  /* border: 1px solid var(--accent-border-color); */
+  border: none;
   border-radius: 5px;
   color: white;
-  padding: 5px 20px;
+  padding: 7px 20px;
   font-size: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  user-select: none;
 }
 
 .accent-btn:hover {
@@ -147,7 +150,7 @@ input[type="checkbox"], input[type="radio"] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-left: 120px;
+  margin-left: 130px;
   margin-top: 40px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -274,11 +277,12 @@ input[type="checkbox"], input[type="radio"] {
 .questions-start {
   background: var(--card-color);
   width: 100%;
-  height: 100px;
+  /* height: 50px; */
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
+  box-sizing: border-box;
 }
 
 .question {
@@ -288,9 +292,226 @@ input[type="checkbox"], input[type="radio"] {
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid var(--border-color);
+  user-select: none;
+  box-sizing: border-box;
 }
 
 ul {
   list-style-type: none;
   padding: 0px;
+}
+
+.question-buttons {
+  display: flex;
+  flex-direction: row;
+}
+
+.question-buttons-order {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
+
+.question-sentence {
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0px;
+  user-select: text;
+}
+
+.question-type {
+  margin-top: 0px;
+  color: var(--label-color);
+  margin-bottom: 10px;
+}
+
+.accent-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  /* visibility: hidden; */
+}
+
+.accent-btn:disabled:hover {
+  background: var(--accent-color);
+}
+
+.indicators {
+  display: flex;
+  flex-direction: row;
+  user-select: none;
+  align-items: center;
+  gap: 10px;
+}
+
+.indicator {
+  background: rgb(242, 242, 242);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--label-color);
+}
+
+.indicator:hover {
+  background: var(--border-color);
+}
+
+.indicator.correct {
+  background: rgb(174, 255, 174);
+  color: rgb(34, 113, 37);
+}
+
+.indicator.correct:hover {
+  background: rgb(129, 236, 133);
+}
+
+.indicator.incorrect {
+  background: rgb(255, 174, 174);
+  color: rgb(155, 19, 19);
+}
+
+.indicator.incorrect:hover {
+  background: rgb(255, 132, 132);
+}
+
+.indicator.current {
+  background: rgb(220, 232, 255);
+  color:  rgb(54, 70, 141);
+}
+
+.indicator.current:hover {
+  background: rgb(192, 203, 252);
+}
+
+.question ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  user-select: none;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.question label {
+  cursor: pointer;
+}
+
+.question input[type="radio"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.feedback {
+  font-weight: 600;
+}
+
+.feedback.correct {
+  color: rgb(60, 192, 99);
+}
+
+.feedback.incorrect {
+  color: rgb(242, 69, 69);
+}
+
+.rearrange-container {
+  /* background: orange; */
+  user-select: none;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  gap: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.drag-area {
+  width: 100%;
+  min-height: 65px;
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  outline: 2px dashed var(--border-color);
+  box-sizing: border-box;
+}
+
+/* .drag-area:hover {
+  outline: 2px dashed var(--accent-color);
+} */
+
+.drag-area.available-words {
+  /* background: cyan; */
+}
+
+.drag-area.answer-zone {
+  /* background: blue; */
+}
+
+.drag-item {
+  background: rgb(25, 102, 244);
+  height: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  color: white;
+}
+
+.drag-item:hover {
+  background: rgb(66, 132, 255);
+  opacity: 0.999; /* bug with draggable and rounded corners */
+}
+
+.banned {
+  background: rgb(242, 69, 69);
+  color: white;
+  padding: 3px 6px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.role-select {
+  width: 100px;
+  /* height: 20px; */
+  font-size: 14px;
+  padding: 5px;
+}
+
+table {
+  background: var(--card-color);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  outline: 1px solid var(--border-color);
+  width: 100%;
+  border-spacing: 0px;
+  border-collapse: collapse;
+}
+
+table .pfp {
+  width: 40px;
+  height: 40px;
+  margin: 0px;
+}
+
+tr {
+  border-bottom: 1px solid var(--border-color);
+}
+
+tr:last-child {
+  border-bottom: none;
+}
+
+.pula {
+  display: flex;
+  flex: row;
+  align-items: center;
+  gap: 20px;
 }

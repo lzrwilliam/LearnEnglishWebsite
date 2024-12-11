@@ -118,100 +118,133 @@ function Users() {
         }
     };
 
-    return (
-        <div className="users-page">
-            <h2>Admin - Gestionare Utilizatori</h2>
-            {message && <p>{message}</p>}
-            <table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>XP</th> {/* Change this */}
-            <th>Stare</th>
-            <th>Acțiuni</th>
-        </tr>
-    </thead>
-    <tbody>
-        {users.map((u) => (
-            <tr key={u.id}>
-                <td>{u.id}</td>
-                <td>{u.username}</td>
-                <td>{u.email}</td>
-                <td>{u.role}</td>
-                <td>{u.xp || 0}</td> {/* Display XP here */}
-                <td>{u.is_banned ? "Banat" : "Activ"}</td>
-                <td>
-                    {u.id !== user.id && u.is_banned && (
-                        <button className="unban-btn" onClick={() => handleUnban(u.id)}>Unban</button>
-                    )}
+//     return (
+//         <div className="users-page">
+//             <h2>Admin - Gestionare Utilizatori</h2>
+//             {message && <p>{message}</p>}
+//             <table>
+//     <thead>
+//         <tr>
+//             <th>ID</th>
+//             <th>Username</th>
+//             <th>Email</th>
+//             <th>Rol</th>
+//             <th>XP</th> {/* Change this */}
+//             <th>Stare</th>
+//             <th>Acțiuni</th>
+//         </tr>
+//     </thead>
+//     <tbody>
+//         {users.map((u) => (
+//             <tr key={u.id}>
+//                 <td>{u.id}</td>
+//                 <td>{u.username}</td>
+//                 <td>{u.email}</td>
+//                 <td>{u.role}</td>
+//                 <td>{u.xp || 0}</td> {/* Display XP here */}
+//                 <td>{u.is_banned ? "Banat" : "Activ"}</td>
+//                 <td>
+//                     {u.id !== user.id && u.is_banned && (
+//                         <button className="unban-btn" onClick={() => handleUnban(u.id)}>Unban</button>
+//                     )}
 
-                    {u.id !== user.id && !u.is_banned && (
-                        <button className="ban-btn" onClick={() => {setUserToBan(u.id); setBanReason("");}}>Ban</button>
-                    )}
+//                     {u.id !== user.id && !u.is_banned && (
+//                         <button className="ban-btn" onClick={() => {setUserToBan(u.id); setBanReason("");}}>Ban</button>
+//                     )}
 
-                    {u.id !== user.id && (
-                        <button className="kick-btn" onClick={() => handleKick(u.id)}>Kick</button>
-                    )}
+//                     {u.id !== user.id && (
+//                         <button className="kick-btn" onClick={() => handleKick(u.id)}>Kick</button>
+//                     )}
 
-{u.id !== user.id && (
-                                       <select
-                                       className="role-dropdown"
-                                       value={selectedUser === u.id ? selectedRole : ""}
-                                       onChange={(e) => handleRoleSelection(u.id, e.target.value)}
-                                   >
-                                       <option value="" disabled>
-                                           Selectați un rol
-                                       </option>
-                                       {["user", "reviewer", "admin"]
-                                           .filter((role) => role !== u.role) // Excludem rolul curent al utilizatorului
-                                           .map((role) => (
-                                               <option key={role} value={role}>
-                                                   {role.charAt(0).toUpperCase() + role.slice(1)}
-                                               </option>
-                                           ))}
-                                   </select>
-                                    )}
+// {u.id !== user.id && (
+//                                        <select
+//                                        className="role-dropdown"
+//                                        value={selectedUser === u.id ? selectedRole : ""}
+//                                        onChange={(e) => handleRoleSelection(u.id, e.target.value)}
+//                                    >
+//                                        <option value="" disabled>
+//                                            Selectați un rol
+//                                        </option>
+//                                        {["user", "reviewer", "admin"]
+//                                            .filter((role) => role !== u.role) // Excludem rolul curent al utilizatorului
+//                                            .map((role) => (
+//                                                <option key={role} value={role}>
+//                                                    {role.charAt(0).toUpperCase() + role.slice(1)}
+//                                                </option>
+//                                            ))}
+//                                    </select>
+//                                     )}
 
                     
-                </td>
+//                 </td>
                
-            </tr>
-        ))}
-    </tbody>
-</table>
+//             </tr>
+//         ))}
+//     </tbody>
+// </table>
 
-{selectedUser && selectedRole && (
-                <div className="confirmation-section">
-                    <p>
-                        Sunteți sigur că doriți să schimbați rolul utilizatorului{" "}
-                        <strong>{selectedUser}</strong> la <strong>{selectedRole}</strong>?
-                    </p>
-                    <button className="confirm-btn" onClick={handleConfirmRoleChange}>
-                        Confirmă
-                    </button>
-                    <button className="cancel-btn" onClick={handleCancelRoleChange}>
-                        Anulează
-                    </button>
-                </div>
-            )}
+// {selectedUser && selectedRole && (
+//                 <div className="confirmation-section">
+//                     <p>
+//                         Sunteți sigur că doriți să schimbați rolul utilizatorului{" "}
+//                         <strong>{selectedUser}</strong> la <strong>{selectedRole}</strong>?
+//                     </p>
+//                     <button className="confirm-btn" onClick={handleConfirmRoleChange}>
+//                         Confirmă
+//                     </button>
+//                     <button className="cancel-btn" onClick={handleCancelRoleChange}>
+//                         Anulează
+//                     </button>
+//                 </div>
+//             )}
 
-            {userToBan && (
-                <div>
-                    <h3>Banează utilizator</h3>
-                    <input
-                        type="text"
-                        placeholder="Motivul banării"
-                        value={banReason}
-                        onChange={(e) => setBanReason(e.target.value)}
-                    />
-                    <button onClick={handleBan}>Confirmă</button>
-                    <button onClick={() => setUserToBan(null)}>Anulează</button>
-                </div>
-            )}
-        </div>
+//             {userToBan && (
+//                 <div>
+//                     <h3>Banează utilizator</h3>
+//                     <input
+//                         type="text"
+//                         placeholder="Motivul banării"
+//                         value={banReason}
+//                         onChange={(e) => setBanReason(e.target.value)}
+//                     />
+//                     <button onClick={handleBan}>Confirmă</button>
+//                     <button onClick={() => setUserToBan(null)}>Anulează</button>
+//                 </div>
+//             )}
+//         </div>
+//     );
+
+    return (
+        <table>
+            <tbody>
+                {users.map((u) => (
+                    <tr>
+                        <td>
+                            <div className="pula">
+                                <p className="level">Level {Math.floor(u.xp / 100)}</p>
+                                <td><div className="pfp"></div></td>
+                                {u.username}
+                                {u.is_banned && <p className="banned">Banned</p>}
+                            </div>
+                        </td>
+                        <td>
+                        </td>
+                        <td>{u.email}</td>
+                        <td>
+                            <select className="role-select">
+                                <option value="user">User</option>
+                                <option value="reviewer">Reviewer</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button className="ban-btn">Ban</button>
+                            <button className="kick-btn">Kick</button>
+                        </td>
+                    </tr>  
+                ))}
+            </tbody>
+        </table>
     );
 }
 

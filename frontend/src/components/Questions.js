@@ -63,7 +63,7 @@ function Questions({updateXp}) {
             setFeedback(
                 isCorrect
                     ? "Correct!"
-                    : `Incorrect! Correct answer: ${correctAnswer}`
+                    : `The answer is ${correctAnswer}`
             );
 
             updateXp(response.data.user_xp);
@@ -152,12 +152,16 @@ function Questions({updateXp}) {
         <div className="indicators">
             {questions.map((_, index) => {
                 const status = responses[index]?.correct; // Fetch the correctness for this question
-                const className = status === true
-                    ? "indicator correct"
-                    : status === false
-                    ? "indicator incorrect"
-                    : "indicator blank"; // Set class based on the correctness
+                var className = "indicator";
     
+                if (index == currentQuestion)
+                    className += " current";
+
+                if (status === true)
+                    className += " correct";
+                else if (status === false)
+                    className += " incorrect";
+
                 return (
                     <div
                         key={index}
@@ -213,7 +217,6 @@ function Questions({updateXp}) {
 
             return (
                 <div className="rearrange-container">
-                    <p className="instruction">Drag-and-drop pentru a rearanja propoziția:</p>
                     
                     {/* Available Words */}
                     
@@ -237,7 +240,6 @@ function Questions({updateXp}) {
                     
         
                     {/* Drop Zone */}
-                    <br/>
                     <div
                         className="drag-area answer-zone"
                         onDrop={(e) => handleDrop(e, null, "dragItems")}
@@ -266,45 +268,39 @@ function Questions({updateXp}) {
     return (
         <>
             <div className="questions-start">
-                <button onClick={fetchQuestions} className="accent-btn">Start</button>
+                {questions.length === 0 ? (<button onClick={fetchQuestions} className="accent-btn">Start</button>) : (
+                    renderQuestionIndicators()
+                )}
+                
             </div>
 
             { questions.length > 0  && (
                 <div className="question">
-                    <p>{questions[currentQuestion].question}</p>
-                    {questions[currentQuestion].translation && (
+
+                    {questions[currentQuestion].type === "fill_blank" && (<p className="question-type">{currentQuestion + 1}. Completeaza propozitia</p>)}
+                    {questions[currentQuestion].type === "rearrange" && (<p className="question-type">{currentQuestion + 1}. Rearanjeaza cuvintele</p>)}
+
+                    <p className="question-sentence">{questions[currentQuestion].question}</p>
+
+                    {/* {questions[currentQuestion].translation && (
                         <p className="translation">
                             {questions[currentQuestion].translation}
                         </p>
-                    )}
+                    )} */}
+
                     {renderQuestionOptions(questions[currentQuestion])}
-                    <div className="actions">
-                        <button onClick={submitAnswer} className="accent-btn">Sumbit</button>
-                        <button
-                            onClick={handlePrevious}
-                            disabled={currentQuestion === 0}
-                        >
-                            Previous Question
-                        </button>
-                        <button
-                            onClick={handleNext}
-                            disabled={currentQuestion === questions.length - 1}
-                        >
-                            Next Question
-                        </button>
+                    {feedback && (<p className={`feedback ${feedback.includes("Correct") ? "correct" : "incorrect"}`}>{feedback}</p>)}
+
+                    <div className="question-buttons">
+                        <button className="accent-btn" onClick={submitAnswer}>Sumbit</button>
+                        <div className="question-buttons-order">
+                            <button className="accent-btn" onClick={handlePrevious} disabled={currentQuestion === 0}>Previous</button>
+                            <button className="accent-btn" onClick={handleNext} disabled={currentQuestion === questions.length - 1}>Next</button>
+                        </div>
                     </div>
-                    {feedback && (
-                        <p
-                            className={`feedback ${
-                                feedback.includes("Correct") ? "correct" : "incorrect"
-                            }`}
-                        >
-                            {feedback}
-                        </p>
-                    )}
                 </div>
-        )}
-    </>
+            )}
+        </>
     );
     //     <div className="container">
     //         <h2>Exercises</h2>

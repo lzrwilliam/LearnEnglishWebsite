@@ -2,7 +2,14 @@ from app import db, Exercise, app
 
 def populate_exercises():
     exercises = [
-        # Fill-in-the-Blank Exercises
+        # {
+        #     "type": "fill_blank",
+        #     "sentence": "I ___ to the park yesterday.",
+        #     "options": ["go", "went", "gone"],
+        #     "correct_option": 1,
+        # }
+
+
         {
             "question": "Completează propoziția: 'I ___ to the park yesterday.'",
             "options": ["go", "went", "gone"],
