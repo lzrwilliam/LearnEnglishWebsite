@@ -52,6 +52,176 @@ class User(db.Model):
     def __repr__(self):
         return f"<User {self.username} (Role: {self.role})>"
     
+
+
+class ReviewerRequest(db.Model):
+    __tablename__ = 'reviewer_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    exercise_id = db.Column(db.Integer, db.ForeignKey('exercises.id', ondelete='CASCADE'), nullable=False)
+    message = db.Column(db.String(500), nullable=False)
+    status = db.Column(db.String(20), default="pending")  # "pending", "approved", "rejected"
+    reviewer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # ID-ul reviewer-ului care a procesat solicitarea
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    message = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    is_read = db.Column(db.Boolean, default=False)   
+
+
+@app.route('/api/user_requests/<int:user_id>', methods=['GET'])
+def get_user_requests(user_id):
+    requests = ReviewerRequest.query.filter_by(user_id=user_id).order_by(ReviewerRequest.created_at.desc()).all()
+    return {
+        "requests": [
+            {
+                "id": req.id,
+                "exercise_id": req.exercise_id,
+                "message": req.message,
+                "status": req.status,
+                "created_at": req.created_at
+            }
+            for req in requests
+        ]
+    }, 200
+
+
+@app.route('/api/notifications/unread_count/<int:user_id>', methods=['GET'])
+def get_unread_notifications_count(user_id):
+    unread_count = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+    return {"unread_count": unread_count}, 200
+
+
+#marcare notificare citita
+@app.route('/api/notifications/<int:notification_id>', methods=['PUT'])
+def mark_notification_as_read(notification_id):
+    notification = Notification.query.get(notification_id)
+    if not notification:
+        return {"message": "Notificarea nu a fost găsită.", "status": "fail"}, 404
+
+    notification.is_read = True
+    db.session.commit()
+
+    return {"message": "Notificarea a fost marcată ca citită.", "status": "success"}, 200
+
+
+@app.route('/api/notifications/<int:notification_id>', methods=['DELETE'])
+def delete_notification(notification_id):
+    notification = Notification.query.get(notification_id)
+    if not notification:
+        return {"message": "Notificarea nu a fost găsită.", "status": "fail"}, 404
+
+    db.session.delete(notification)
+    db.session.commit()
+
+    return {"message": "Notificarea a fost ștearsă.", "status": "success"}, 200
+
+@app.route('/api/notifications/<int:user_id>', methods=['GET'])
+def get_notifications(user_id):
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    pagination = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    notifications = pagination.items
+
+    return {
+        "notifications": [
+            {
+                "id": notif.id,
+                "message": notif.message,
+                "created_at": notif.created_at,
+                "is_read": notif.is_read
+            }
+            for notif in notifications
+        ],
+        "total": pagination.total,
+        "page": pagination.page,
+        "pages": pagination.pages
+    }, 200
+
+
+@app.route('/api/reviewer_requests', methods=['POST'])
+def create_reviewer_request():
+    data = request.json
+    user_id = data.get('user_id')
+    exercise_id = data.get('exercise_id')
+    message = data.get('message')
+
+    if not user_id or not exercise_id or not message:
+        return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
+
+   
+    existing_request = ReviewerRequest.query.filter_by(user_id=user_id, exercise_id=exercise_id, status="pending").first()
+    if existing_request:
+        return {"message": "Există deja o solicitare activă pentru acest exercițiu.", "status": "fail"}, 400
+
+    new_request = ReviewerRequest(user_id=user_id, exercise_id=exercise_id, message=message)
+    db.session.add(new_request)
+    db.session.commit()
+
+    return {"message": "Solicitarea a fost trimisă cu succes.", "status": "success"}, 201
+
+
+@app.route('/api/reviewer_requests', methods=['GET'])
+def get_reviewer_requests():
+    requests = ReviewerRequest.query.filter_by(status="pending").all()
+    return {
+        "requests": [
+            {
+                "id": req.id,
+                "user_id": req.user_id,
+                "exercise_id": req.exercise_id,
+                "message": req.message,
+                "created_at": req.created_at
+            }
+            for req in requests
+        ]
+    }, 200
+
+
+
+@app.route('/api/reviewer_requests/<int:request_id>', methods=['POST'])
+def process_reviewer_request(request_id):
+    data = request.json
+    action = data.get('action')  # approve/reject
+    reviewer_id = data.get('reviewer_id')
+
+    request_obj = ReviewerRequest.query.get(request_id)
+    if not request_obj:
+        return {"message": "Solicitarea nu a fost găsită.", "status": "fail"}, 404
+
+    if action not in ["approve", "reject"]:
+        return {"message": "Acțiune invalidă.", "status": "fail"}, 400
+
+    request_obj.status = "approved" if action == "approve" else "rejected"
+    request_obj.reviewer_id = reviewer_id
+    db.session.commit()
+
+    
+    #notificare pt user
+    notification_message = (
+        f"Solicitarea ta pentru exercițiul {request_obj.exercise_id} a fost "
+        + ("acceptată." if action == "approve" else "respinsă.")
+    )
+    new_notification = Notification(user_id=request_obj.user_id, message=notification_message)
+    db.session.add(new_notification)
+    db.session.commit()
+
+    return {"message": f"Solicitarea a fost {action}.", "status": "success"}, 200
+
+
+
+
+   
+    
 @app.route('/api/admin/unban_user', methods=['POST'])
 def unban_user():
 
@@ -197,15 +367,6 @@ class Exercise(db.Model):
             "difficulty": self.difficulty
         }
 
-class ReviewerRequest(db.Model):
-
-    __tablename__ = 'reviewer_requests'
-    id = db.Column(db.Integer, primary_key=True)
-    reviewer_id = db.Column(db.Integer, nullable=False)
-    request_type = db.Column(db.String(20), nullable=False)
-    exercise_data = db.Column(db.JSON, nullable=False)
-    status = db.Column(db.String(20), default="pending")
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
 
 class UserQuestionProgress(db.Model):
@@ -263,6 +424,14 @@ def get_reviewer_exercises():
     exercises = Exercise.query.all()
 
     return {"exercises": [exercise.to_dict() for exercise in exercises]}, 200
+
+@app.route('/api/reviewer/exercises/<int:exercise_id>', methods=['GET'])
+def get_exercise_details(exercise_id):
+    exercise = Exercise.query.get(exercise_id)
+    if not exercise:
+        return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
+
+    return {"exercise": exercise.to_dict(), "status": "success"}, 200
 
 
 
