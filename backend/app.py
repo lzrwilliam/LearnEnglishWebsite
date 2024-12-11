@@ -90,70 +90,7 @@ def login():
         "user": user.to_dict()
     }, 200
 
-@app.route('/api/admin/exercises/<int:exercise_id>', methods=['DELETE'])
-def delete_exercise(exercise_id):
 
-    try:
-        exercise = Exercise.query.get(exercise_id)
-
-        if not exercise:
-            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
-
-        db.session.delete(exercise)
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost șters cu succes.", "status": "success"}, 200
-    
-    except Exception as e:
-        return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
-
-@app.route('/api/admin/exercises/<int:exercise_id>', methods=['PUT'])
-def edit_exercise(exercise_id):
-
-    data = request.json
-
-    try:
-        exercise = Exercise.query.get(exercise_id)
-
-        if not exercise:
-            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
-
-        exercise.question = data.get("question", exercise.question)
-        exercise.options = data.get("options", exercise.options)
-        exercise.correct_option = data.get("correct_option", exercise.correct_option)
-        exercise.correct_answer = data.get("correct_answer", exercise.correct_answer)
-        exercise.type = data.get("type", exercise.type)
-        exercise.difficulty = data.get("difficulty", exercise.difficulty)
-
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost actualizat cu succes.", "status": "success"}, 200
-    
-    except Exception as e:
-        return {"message": "Eroare la actualizarea exercițiului.", "status": "fail", "error": str(e)}, 500
-
-@app.route('/api/admin/exercises', methods=['POST'])
-def add_exercise():
-
-    data = request.json
-
-    try:
-        new_exercise = Exercise(
-            question=data["question"],
-            options=data.get("options"),                # Poate fi None
-            correct_option=data.get("correct_option"),  # Poate fi None
-            correct_answer=data.get("correct_answer"),  # Poate fi None
-            type=data["type"],
-            difficulty=data["difficulty"]
-        )
-
-        db.session.add(new_exercise)
-        db.session.commit()
-
-        return {"message": "Exercițiul a fost adăugat cu succes.", "status": "success", "exercise": new_exercise.to_dict()}, 201
-    
-    except Exception as e:
-        return {"message": "Eroare la adăugarea exercițiului.", "status": "fail", "error": str(e)}, 500
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -246,6 +183,15 @@ class Exercise(db.Model):
     difficulty = db.Column(db.String(50), nullable=False, default="easy")
     random_order = db.Column(db.Float, default=func.random())
 
+    user_progress = db.relationship(
+        'UserQuestionProgress',
+        cascade="all, delete",
+        backref='exercise',
+        passive_deletes=True
+    )
+
+
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -268,157 +214,27 @@ class ReviewerRequest(db.Model):
     status = db.Column(db.String(20), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
+
 class UserQuestionProgress(db.Model):
-
     __tablename__ = 'user_question_progress'
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    question_id = db.Column(db.Integer, db.ForeignKey('exercises.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('exercises.id',ondelete='CASCADE'),nullable=False)
     answered_correctly = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
 
-@app.route("/api/reviewer/requests", methods=["GET"])
-def get_reviewer_requests():
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "question_id": self.question_id,
+            "answered_correctly": self.answered_correctly,
+        }
 
-    reviewer_id = request.args.get("reviewer_id")
-
-    if not reviewer_id:
-        return jsonify({"status": "error", "message": "Reviewer ID is required."}), 400
-
-    try:
-        pending_requests = ReviewerRequest.query.filter_by(reviewer_id=reviewer_id, status="pending").all()
-
-        formatted_requests = [
-            {
-                "id": req.id,
-                "reviewer_id": req.reviewer_id,
-                "request_type": req.request_type,
-                "exercise_data": req.exercise_data,
-                "status": req.status,
-                "created_at": req.created_at,
-            }
-            for req in pending_requests
-        ]
-
-        return jsonify({"status": "success", "requests": formatted_requests}), 200
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route("/api/reviewer/requests", methods=["POST"])
-def create_request():
-
-    data = request.json
-    reviewer_id = data.get("reviewer_id")
-    request_type = data.get("request_type")
-    exercise_data = data.get("exercise_data")
-    exercise_id = exercise_data.get("id")
-
-    if not reviewer_id or not request_type or not exercise_data:
-        return jsonify({"status": "error", "message": "Invalid data provided"}), 400
-
-    existing_request = ReviewerRequest.query.filter(
-        ReviewerRequest.reviewer_id == reviewer_id,
-        ReviewerRequest.status == "pending",
-        ReviewerRequest.request_type == request_type,
-        db.cast(ReviewerRequest.exercise_data["id"], db.String) == str(exercise_id)
-    ).first()
-
-    if existing_request:
-        return jsonify({"status": "error", "message": "A pending request for this exercise already exists."}), 400
-
-    new_request = ReviewerRequest(
-        reviewer_id=reviewer_id,
-        request_type=request_type,
-        exercise_data=exercise_data,
-    )
-
-    db.session.add(new_request)
-    db.session.commit()
-
-    return jsonify({"status": "success", "message": "Request submitted successfully"}), 201
-
-@app.route("/api/admin/requests", methods=["GET"])
-def get_requests():
-
-    requests = ReviewerRequest.query.filter_by(status="pending").all()
-    formatted_requests = []
-
-    for req in requests:
-        exercise_data = req.exercise_data
-
-        if req.request_type == "edit":
-            original_exercise = Exercise.query.get(exercise_data.get("id"))
-            exercise_data = {
-                "original": original_exercise.to_dict() if original_exercise else {},
-                "proposed": exercise_data,
-            }
-        elif req.request_type == "delete":
-            exercise = Exercise.query.get(exercise_data.get("id"))
-            if exercise:
-                exercise_data = exercise.to_dict()
-
-        formatted_requests.append({
-            "id": req.id,
-            "reviewer_id": req.reviewer_id,
-            "request_type": req.request_type,
-            "exercise_data": exercise_data,
-            "created_at": req.created_at,
-        })
-
-    return jsonify({"requests": formatted_requests})
-
-@app.route("/api/admin/requests/<int:request_id>/approve", methods=["POST"])
-def approve_request(request_id):
-
-    request_item = ReviewerRequest.query.get(request_id)
-
-    if not request_item:
-        return jsonify({"status": "error", "message": "Request not found"}), 404
-
-    try:
-        if request_item.request_type == "add":
-            new_exercise = Exercise(**request_item.exercise_data)
-            db.session.add(new_exercise)
-        elif request_item.request_type == "edit":
-            exercise_id = request_item.exercise_data.get("id")
-            exercise = Exercise.query.get(exercise_id)
-            if exercise:
-                for key, value in request_item.exercise_data.items():
-                    setattr(exercise, key, value)
-        elif request_item.request_type == "delete":
-            exercise_id = request_item.exercise_data.get("id")
-            exercise = Exercise.query.get(exercise_id)
-            if exercise:
-                db.session.delete(exercise)
-
-        request_item.status = "approved"
-        db.session.commit()
-
-        return jsonify({"status": "success", "message": "Request approved successfully"}), 200
-    
-    except Exception as e:
-        return jsonify({"status": "error", "message": "Error processing request", "error": str(e)}), 500
-
-@app.route("/api/admin/requests/<int:request_id>/reject", methods=["POST"])
-def reject_request(request_id):
-
-    request_item = ReviewerRequest.query.get(request_id)
-
-    if not request_item:
-        return jsonify({"status": "error", "message": "Request not found"}), 404
-
-    try:
-        request_item.status = "rejected"
-        db.session.commit()
-
-        return jsonify({"status": "success", "message": "Request rejected successfully"}), 200
-    
-    except Exception as e:
-        return jsonify({"status": "error", "message": "Error rejecting request", "error": str(e)}), 500
 
 @app.route('/api/questions', methods=['POST'])
 def get_questions():
-
     data = request.json
     user_id = data.get('user_id')
     session_questions = data.get('session_questions', [])
@@ -427,19 +243,22 @@ def get_questions():
         return {"message": "User ID is required.", "status": "fail"}, 400
 
     user = User.query.get(user_id)
-
     if not user:
         return {"message": "User not found.", "status": "fail"}, 404
 
+    answered_questions = db.session.query(UserQuestionProgress.question_id).filter_by(user_id=user_id).all()
+    answered_question_ids = [q[0] for q in answered_questions]
+
     questions = Exercise.query.filter(
         Exercise.difficulty == user.difficulty,
-        ~Exercise.id.in_(session_questions)
+        ~Exercise.id.in_(session_questions + answered_question_ids)
     ).order_by(Exercise.random_order).limit(5).all()
 
     if not questions:
         return {"message": f"No more questions available for difficulty {user.difficulty}.", "status": "fail"}, 404
 
     return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
+
 
 @app.route('/api/reviewer/exercises', methods=['GET'])
 def get_reviewer_exercises():
@@ -448,9 +267,90 @@ def get_reviewer_exercises():
 
     return {"exercises": [exercise.to_dict() for exercise in exercises]}, 200
 
+
+
+@app.route('/api/reviewer/exercises/<int:exercise_id>', methods=['PUT'])
+def edit_exercise(exercise_id):
+
+    data = request.json
+
+    try:
+        exercise = Exercise.query.get(exercise_id)
+
+        if not exercise:
+            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
+
+        exercise.question = data.get("question", exercise.question)
+        exercise.options = data.get("options", exercise.options)
+        exercise.correct_option = data.get("correct_option", exercise.correct_option)
+        exercise.correct_answer = data.get("correct_answer", exercise.correct_answer)
+        exercise.type = data.get("type", exercise.type)
+        exercise.difficulty = data.get("difficulty", exercise.difficulty)
+
+        db.session.commit()
+
+        return {"message": "Exercițiul a fost actualizat cu succes.", "status": "success"}, 200
+    
+    except Exception as e:
+        return {"message": "Eroare la actualizarea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+@app.route('/api/reviewer/exercises', methods=['POST'])
+def add_exercise():
+
+    data = request.json
+
+    try:
+        new_exercise = Exercise(
+            question=data["question"],
+            options=data.get("options"),                # Poate fi None
+            correct_option=data.get("correct_option"),  # Poate fi None
+            correct_answer=data.get("correct_answer"),  # Poate fi None
+            type=data["type"],
+            difficulty=data["difficulty"]
+        )
+
+        db.session.add(new_exercise)
+        db.session.commit()
+
+        return {"message": "Exercițiul a fost adăugat cu succes.", "status": "success", "exercise": new_exercise.to_dict()}, 201
+    
+    except Exception as e:
+        return {"message": "Eroare la adăugarea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+
+
+
+
+
+@app.route('/api/reviewer/exercises/<int:exercise_id>', methods=['DELETE'])
+def delete_exercise(exercise_id):
+    try:
+       
+        print(f"Attempting to delete exercise with ID: {exercise_id}")
+
+       
+        exercise = Exercise.query.get(exercise_id)
+        if not exercise:
+            print(f"Exercise with ID {exercise_id} not found.")  # Debugging
+            return {"message": "Exercițiul nu a fost găsit.", "status": "fail"}, 404
+
+      
+        db.session.delete(exercise)
+        db.session.commit()
+
+        print(f"Exercise with ID {exercise_id} deleted successfully.")  # Debugging
+        return {"message": "Exercițiul a fost șters cu succes.", "status": "success"}, 200
+    
+    except Exception as e:
+      
+        print(f"Error deleting exercise with ID {exercise_id}: {e}")
+        return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
+
+
+
+
 @app.route('/api/answer', methods=['POST'])
 def submit_answer():
-
     data = request.json
     user_id = data.get('user_id')
     question_id = data.get('question_id')
@@ -460,9 +360,13 @@ def submit_answer():
         return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
 
     question = Exercise.query.get(question_id)
-
     if not question:
         return {"message": "Întrebarea nu există.", "status": "fail"}, 404
+
+    # Verificăm dacă întrebarea a fost deja răspunsă
+    progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
+    if progress:
+        return {"message": "Întrebarea a fost deja răspunsă.", "status": "fail"}, 400
 
     correct = False
     xp = 0
@@ -485,19 +389,39 @@ def submit_answer():
 
     if correct:
         user = User.query.get(user_id)
-
         if user:
             user.xp += xp
             db.session.commit()
 
-        progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
-
-        if not progress:
-            progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=True)
-            db.session.add(progress)
-            db.session.commit()
+    
+    progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=correct)
+    db.session.add(progress)
+    db.session.commit()
 
     return {"message": "Răspuns trimis.", "correct": correct, "xp": xp, "status": "success"}, 200
+
+
+@app.route('/api/admin/update_role', methods=['POST'])
+def update_role():
+    data = request.json
+    user_id = data.get("user_id")
+    new_role = data.get("new_role")
+
+    if not user_id or not new_role:
+        return {"message": "User ID și rolul nou sunt necesare.", "status": "fail"}, 400
+
+    valid_roles = ["user", "reviewer", "admin"]
+    if new_role.lower() not in valid_roles:
+        return {"message": "Rol invalid.", "status": "fail"}, 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return {"message": "Userul nu a fost găsit.", "status": "fail"}, 404
+
+    user.role = new_role.lower()
+    db.session.commit()
+
+    return {"message": f"Rolul utilizatorului {user.username} a fost actualizat la {new_role}.", "status": "success"}, 200
 
 @app.route('/api/admin/exercises', methods=['GET'])
 def get_all_exercises():
