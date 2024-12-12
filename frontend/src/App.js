@@ -146,3 +146,34 @@ function App() {
 }
 
 export default App;
+
+// toti
+//     - exercitii
+//     - leaderboard
+//     - edit profile
+//     - report la intrebare
+//     - notificari { de la reviwer aprobat sau respins, si de la admin pt rol }
+
+// admin 
+//     - request pentru role change
+//     - ban kick la leaderboard
+//     - doar el vede useri cu ban, care sunt la final de leaderboard
+//     - filtru in plus la leaderboard ***
+
+// reviwer 
+//     - request pentru exercitii
+//     - adauga sterge modifica exercitii
+
+// Edit profile:
+//     - dificultatea
+//     - request pentru admin sau reviwer
+//     - sterge contul
+//     - edit general {nume, parola, pfp, email}
+
+// menuiu notificari primele alea necitite plsu buton de clear all mark all as read, poza si nume
+// leaderboard (posibil search) si admin vede ban si kick si aia banati
+// request de role poza nume mesaj si 2 butoane accept si reject
+// request de exercitii poza nume mesaj si 2 butoane vezi detalii si reject si dupa ce apasa pe detalii paote modifica intrebarea si buton de aprove
+// meniu review cu toate intrebarile plus pop up pentru intrebare nou sau edit la o intrebare
+// edit profile, request pentru rol, delete account, difcultate (edit general)
+// exercitii ...

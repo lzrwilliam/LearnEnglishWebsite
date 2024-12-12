@@ -12,6 +12,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    border: 2px solid white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    /* border: 2px solid white; */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
