@@ -235,8 +235,7 @@ def process_reviewer_request(request_id):
 
     notification_message = (
         f"Solicitarea ta pentru exercițiul {request_obj.exercise_id} a fost "
-        + ("acceptată" if action == "approve" else "respinsă")
-        + f" de către {reviewer.username}."
+        + ("acceptată" if action == "approve" else "respinsă.")
     )
 
     new_notification = Notification(user_id=request_obj.user_id, sender_id=reviewer_id, message=notification_message)
