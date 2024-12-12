@@ -20,7 +20,7 @@ function Login() {
                 login(response.data.user, remember);
             else
                 setMessage(response.data.message);
-            
+
         } catch (error) {
             setMessage(
                 error.response?.data?.message || "Eroare la conectarea cu serverul."

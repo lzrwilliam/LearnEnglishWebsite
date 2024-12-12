@@ -4,7 +4,6 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Users from "./components/Users";
 import Questions from "./components/Questions";
-import Admin from "./components/Admin";
 import Requests from "./components/Requests";
 import UserNotifications from "./components/UserNotifications";
 
@@ -14,8 +13,6 @@ import ReviewerPendingRequests from "./components/ReviewerPendingRequests";
 
 import ProtectedRoute from "./components/ProtectedRoute"; // Importăm ruta protejată
 import Reviewer from "./components/Reviewer";
-
-import './notificationbadge.css'
 
 export const AuthContext = createContext();
 
@@ -48,7 +45,9 @@ function App() {
                 }
             }
         };
+
         fetchUnreadCount();
+
     }, [user]);
 
     const login = (userData, remember) => {
@@ -58,8 +57,6 @@ function App() {
             localStorage.setItem("user", JSON.stringify(userData));
         else
             sessionStorage.setItem("user", JSON.stringify(userData));
-
-        window.location.href = "/questions";
     };
 
     const logout = () => {
@@ -92,18 +89,20 @@ function App() {
                         <div className="menu-options">
                             <Link to="/questions" className="nav-link">✏️ Exercises</Link>
                             <Link to="/leaderboards" className="nav-link">🌍 Leaderboards</Link>
-                            <Link to="/notifications" className="nav-link" style={{ position: "relative" }}>
-                                🔔 Notifications
-                                {unreadCount > 0 && (
-                                    <span className="notification-badge">{unreadCount}</span>
-                                )}
+                            <Link to="/notifications" className="nav-link">
+                                <div style={{position: "relative"}}>
+                                    {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+                                    🔔
+                                </div>
+                                <div>
+                                    Notifications
+                                </div>
                             </Link>
-                            {user.role === "admin" && (<Link to="/admin/exercises" className="nav-link">📖 Review</Link>)}
+
                             {user.role === "admin" && (<Link to="/admin/users" className="nav-link">🔒 Users</Link>)}
                             {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">✉️ Requests</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/pending-requests" className="nav-link">✉️ Pending Requests</Link>)}
-
 
                             <Link onClick={logout}>↪ Sign out</Link>
                         </div>
@@ -112,17 +111,13 @@ function App() {
                 <div className="content">
                     <Routes>
                         <Route path="/" element={user ? <Navigate to="/questions" /> : <Navigate to="/login" />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={ <Register />} />
+                        <Route path="/login" element={user ? <Navigate to="/questions"/> : <Login/>} />
+                        <Route path="/register" element={user ? <Navigate to="/questions"/> : <Register/>} />
                         
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />)}
                 
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
 
-                        {user?.role === "admin" && (
-                            <Route path="/admin/exercises" element={ <Admin />} />
-                        )}
-                        
                         {user?.role === "admin" && (
                             <Route path="/admin/users" element={<Users/>}  />
                         )}
@@ -133,11 +128,8 @@ function App() {
                         {user?.role === "reviewer" && (
                              <Route path="/reviewer/pending-requests" element={<ReviewerPendingRequests />} />
 
-                    )}
-            <Route path="/notifications" element={<ProtectedRoute><UserNotifications /></ProtectedRoute>} />
-
-
-                        
+                        )}
+                        <Route path="/notifications" element={<ProtectedRoute><UserNotifications /></ProtectedRoute>} />
                     </Routes>
                 </div>
             </BrowserRouter>
