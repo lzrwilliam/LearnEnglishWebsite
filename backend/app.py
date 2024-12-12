@@ -148,6 +148,25 @@ def get_notifications(user_id):
     }, 200
 
 
+
+@app.route('/api/user_requests', methods=['GET'])
+def check_active_request():
+    user_id = request.args.get('user_id', type=int)
+    exercise_id = request.args.get('exercise_id', type=int)
+
+    if not user_id or not exercise_id:
+        return {"hasActiveRequest": False}, 400
+
+    # Verificam daca exista o cerere activa pt exercitiul curent și user-ul curent
+    active_request = ReviewerRequest.query.filter_by(
+        user_id=user_id,
+        exercise_id=exercise_id,
+        status="pending"  # doar cele in asteptare sunt considerate active
+    ).first()
+
+    return {"hasActiveRequest": bool(active_request)}, 200
+
+
 @app.route('/api/reviewer_requests', methods=['POST'])
 def create_reviewer_request():
     data = request.json

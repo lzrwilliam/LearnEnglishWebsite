@@ -568,3 +568,81 @@ ul {
   justify-content: center;
   width: 80px;
 }
+
+
+
+/* Buton Report */
+.report-btn {
+  background: #ff5722; /* Culoare distinctă */
+  color: white;
+  padding: 5px 15px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.report-btn:hover {
+  background: #e64a19;
+}
+
+.report-btn:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Container sugestii (mai mic și compact) */
+.suggestion-container {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background: var(--card-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+}
+
+/* Textarea pentru sugestii */
+.suggestion-textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  resize: none;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+  outline: none;
+}
+
+.suggestion-textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Buton pentru trimiterea sugestiei */
+.suggestion-button {
+  align-self: flex-end;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-button:hover {
+  background: var(--accent-hover-color);
+}
+
+.suggestion-button:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.7;
+}

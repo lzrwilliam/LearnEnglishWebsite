@@ -14,6 +14,8 @@ function Questions({updateXp}) {
     const [responses, setResponses] = useState({}); // Tracks responses and correctness
     const [reportMessage, setReportMessage] = useState("");
     const [hasActiveRequest, setHasActiveRequest] = useState(false); // verifi daca user a facut cerere pt ex curent
+    const [showReportBox, setShowReportBox] = useState(false); // sa afisam caseta text pt report la ex
+
 
 
 
@@ -330,6 +332,9 @@ function Questions({updateXp}) {
 
                     <p className="question-sentence">{questions[currentQuestion].question}</p>
 
+                  
+
+
                     {/* {questions[currentQuestion].translation && (
                         <p className="translation">
                             {questions[currentQuestion].translation}
@@ -342,10 +347,65 @@ function Questions({updateXp}) {
                     <div className="question-buttons">
                         <button className="accent-btn" onClick={submitAnswer}>Sumbit</button>
                         <div className="question-buttons-order">
+                        <button
+    className="accent-btn report-btn"
+    onClick={async () => {
+        try {
+            const exerciseId = questions[currentQuestion]?.id;
+
+            if (!exerciseId) {
+                alert("Exercițiul nu este disponibil.");
+                return;
+            }
+
+            // Verificăm în baza de date dacă există o cerere activă
+            const response = await api.get(
+                `/user_requests?user_id=${user.id}&exercise_id=${exerciseId}`
+            );
+
+            if (response.data.hasActiveRequest) {
+                setHasActiveRequest(true);
+                alert("You already have an active report for this exercise.");
+            } else {
+                setHasActiveRequest(false);
+                setShowReportBox(!showReportBox); 
+            }
+        } catch (error) {
+            console.error("Eroare la verificarea cererii active:", error);
+            alert("A apărut o eroare. Încercați din nou.");
+        }
+    }}
+>
+    Report
+</button>
+
                             <button className="accent-btn" onClick={handlePrevious} disabled={currentQuestion === 0}>Previous</button>
                             <button className="accent-btn" onClick={handleNext} disabled={currentQuestion === questions.length - 1}>Next</button>
                         </div>
                     </div>
+
+                    
+
+
+                    {showReportBox && !hasActiveRequest && (
+    <div className="suggestion-container">
+        <textarea
+            className="suggestion-textarea"
+            placeholder="Scrie un mesaj pentru reviewer..."
+            value={reportMessage}
+            onChange={(e) => setReportMessage(e.target.value)}
+        />
+        <button
+            className="suggestion-button"
+            onClick={() => {
+                submitReport();
+                setShowReportBox(false); // Închide caseta după trimitere
+            }}
+        >
+            Trimite
+        </button>
+    </div>
+)}
                 </div>
             )}
         </>
