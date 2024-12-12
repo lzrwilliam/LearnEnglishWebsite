@@ -646,3 +646,108 @@ ul {
   cursor: not-allowed;
   opacity: 0.7;
 }
+
+
+/* Pentru pagina de requests a reviewers*/
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.request-card {
+  background: var(--card-color);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+.request-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.reject-btn {
+  background: rgb(242, 69, 69);
+}
+
+.reject-btn:hover {
+  background: rgb(200, 50, 50);
+}
+
+.exercise-details {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+}
+
+.edit-form {
+  margin-top: 15px;
+  background: var(--card-color);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.edit-form h3 {
+  margin-top: 0;
+}
+
+.edit-form label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: var(--label-color);
+}
+
+.edit-form input, .edit-form select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.edit-form input:focus, .edit-form select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
+.edit-form button {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.edit-form button:hover {
+  background: var(--accent-hover-color);
+}
+
+
+/* butoane editare la request rewiers*/
+.button-container {
+  display: flex;
+  justify-content: space-between; /* Spațiu între butoane */
+  gap: 15px; /* Adaugă spațiu între ele */
+  margin-top: 15px; /* Spațiu față de restul formularului */
+}
+
+.save-btn {
+  background-color: var(--accent-color);
+}
+
+.approve-btn {
+  background-color: #4CAF50; /* Verde pentru approve */
+}
