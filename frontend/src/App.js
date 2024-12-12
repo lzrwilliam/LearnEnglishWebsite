@@ -101,7 +101,7 @@ function App() {
 
                             {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">✉️ Requests</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
-                            {user.role === "reviewer" && (<Link to="/reviewer/pending-requests" className="nav-link">✉️ Requests</Link>)}
+                            {user.role === "reviewer" && (<Link to="/reviewer/requests" className="nav-link">✉️ Requests</Link>)}
 
                             <Link onClick={logout}>↪ Sign out</Link>
                         </div>
@@ -119,9 +119,9 @@ function App() {
 
                         {/* probabil ca putem sa facem mai bine aici */}
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}
-                        {user?.role === "admin" && <Route path="/admin/users" element={<Users/>} />}
+                        {user?.role === "admin"  &&(<Route path="/admin/users" element= {<Users/>} />)}
                         {user?.role === "reviewer" && <Route path="/reviewer/exercises" element={<Reviewer/>} />}
-                        {user?.role === "reviewer" && <Route path="/reviewer/pending-requests" element={<ReviewerPendingRequests/>} />}
+                        {user?.role === "reviewer" && <Route path="/reviewer/requests" element={<ReviewerPendingRequests/>} />}
                     
                     </Routes>
                 </div>
@@ -155,11 +155,10 @@ export default App;
 //     - sterge contul
 //     - edit general {nume, parola, pfp, email}
 
-// menuiu notificari primele alea necitite plsu buton de clear all mark all as read, poza si nume
-// leaderboard (posibil search) si admin vede ban si kick si aia banati
-// notificarile
-// request de role poza nume mesaj si 2 butoane accept si reject
-// request de exercitii poza nume mesaj si 2 butoane vezi detalii si reject si dupa ce apasa pe detalii paote modifica intrebarea si buton de aprove
-// meniu review cu toate intrebarile plus pop up pentru intrebare nou sau edit la o intrebare
-// edit profile, request pentru rol, delete account, difcultate (edit general)
 // exercitii ...
+// leaderboard (posibil search) si admin vede ban si kick si aia banati
+// menuiu notificari primele alea necitite plsu buton de clear all mark all as read, poza si nume
+// edit profile, request pentru rol, delete account, difcultate (edit general)
+// request de role poza nume mesaj si 2 butoane accept si reject
+// meniu review cu toate intrebarile plus pop up pentru intrebare nou sau edit la o intrebare
+// request de exercitii poza nume mesaj si 2 butoane vezi detalii si reject si dupa ce apasa pe detalii paote modifica intrebarea si buton de aprove
