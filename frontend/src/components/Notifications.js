@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
-import "./notifications.css";
 
 function UserNotifications() {
     const { user } = useContext(AuthContext);

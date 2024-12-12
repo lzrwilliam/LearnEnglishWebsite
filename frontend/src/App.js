@@ -5,7 +5,7 @@ import Register from "./components/Register";
 import Users from "./components/Users";
 import Questions from "./components/Questions";
 import Requests from "./components/Requests";
-import UserNotifications from "./components/UserNotifications";
+import Notifications from "./components/Notifications";
 
 import api from "./api"; 
 
@@ -87,22 +87,21 @@ function App() {
                             <p>{100 - (user.xp % 100)} xp away from reaching level {Math.floor(user.xp / 100) + 1}</p>
                         </div>
                         <div className="menu-options">
+
                             <Link to="/questions" className="nav-link">✏️ Exercises</Link>
                             <Link to="/leaderboards" className="nav-link">🌍 Leaderboards</Link>
+                            
                             <Link to="/notifications" className="nav-link">
                                 <div style={{position: "relative"}}>
                                     {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
                                     🔔
                                 </div>
-                                <div>
-                                    Notifications
-                                </div>
+                                <div>&nbsp;Notifications</div>
                             </Link>
 
-                            {user.role === "admin" && (<Link to="/admin/users" className="nav-link">🔒 Users</Link>)}
                             {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">✉️ Requests</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
-                            {user.role === "reviewer" && (<Link to="/reviewer/pending-requests" className="nav-link">✉️ Pending Requests</Link>)}
+                            {user.role === "reviewer" && (<Link to="/reviewer/pending-requests" className="nav-link">✉️ Requests</Link>)}
 
                             <Link onClick={logout}>↪ Sign out</Link>
                         </div>
@@ -110,26 +109,20 @@ function App() {
                 )}
                 <div className="content">
                     <Routes>
-                        <Route path="/" element={user ? <Navigate to="/questions" /> : <Navigate to="/login" />} />
-                        <Route path="/login" element={user ? <Navigate to="/questions"/> : <Login/>} />
-                        <Route path="/register" element={user ? <Navigate to="/questions"/> : <Register/>} />
+
+                        <Route path="/" element={<Navigate to="/questions"/>} />
+                        <Route path="/login" element={user ? <Navigate to="/"/> : <Login/>} />
+                        <Route path="/register" element={user ? <Navigate to="/"/> : <Register/>} />
                         
-                        {user?.role === "admin"  &&(<Route path="/admin/requests" element= { <ProtectedRoute><Requests /></ProtectedRoute> } />)}
-                
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
+                        <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
 
-                        {user?.role === "admin" && (
-                            <Route path="/admin/users" element={<Users/>}  />
-                        )}
-
-                        {user?.role === "reviewer" && (
-                            <Route path="/reviewer/exercises" element={<Reviewer />} />
-                        )}
-                        {user?.role === "reviewer" && (
-                             <Route path="/reviewer/pending-requests" element={<ReviewerPendingRequests />} />
-
-                        )}
-                        <Route path="/notifications" element={<ProtectedRoute><UserNotifications /></ProtectedRoute>} />
+                        {/* probabil ca putem sa facem mai bine aici */}
+                        {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}
+                        {user?.role === "admin" && <Route path="/admin/users" element={<Users/>} />}
+                        {user?.role === "reviewer" && <Route path="/reviewer/exercises" element={<Reviewer/>} />}
+                        {user?.role === "reviewer" && <Route path="/reviewer/pending-requests" element={<ReviewerPendingRequests/>} />}
+                    
                     </Routes>
                 </div>
             </BrowserRouter>
@@ -164,6 +157,7 @@ export default App;
 
 // menuiu notificari primele alea necitite plsu buton de clear all mark all as read, poza si nume
 // leaderboard (posibil search) si admin vede ban si kick si aia banati
+// notificarile
 // request de role poza nume mesaj si 2 butoane accept si reject
 // request de exercitii poza nume mesaj si 2 butoane vezi detalii si reject si dupa ce apasa pe detalii paote modifica intrebarea si buton de aprove
 // meniu review cu toate intrebarile plus pop up pentru intrebare nou sau edit la o intrebare
