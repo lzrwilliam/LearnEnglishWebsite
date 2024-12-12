@@ -25,29 +25,44 @@ function Users() {
         }
     }, [user]);
 
-    const handleBan = async () => {
-        if (!userToBan || !banReason) {
-            setMessage("Introduceți un motiv pentru banare.");
-            return;
-        }
+    const handleBan = async (user_id) => {
+        // if (!userToBan || !banReason) {
+        //     setMessage("Introduceți un motiv pentru banare.");
+        //     return;
+        // }
+
+        // try {
+        //     const response = await api.post("/admin/ban_user", {
+        //         user_id: userToBan,
+        //         reason: banReason,
+        //     });
+        //     if (response.data.status === "success") {
+        //         setUsers((prev) =>
+        //             prev.map((user) =>
+        //                 user.id === userToBan
+        //                     ? { ...user, is_banned: true, ban_reason: banReason }
+        //                     : user
+        //             )
+        //         );
+        //         setMessage(response.data.message);
+        //     }
+        // } catch (error) {
+        //     setMessage("Eroare la banarea utilizatorului.");
+        // }
 
         try {
-            const response = await api.post("/admin/ban_user", {
-                user_id: userToBan,
-                reason: banReason,
-            });
+            const response = await api.post("/admin/ban_user", { user_id: user_id, reason: "..."});
+
             if (response.data.status === "success") {
                 setUsers((prev) =>
                     prev.map((user) =>
-                        user.id === userToBan
-                            ? { ...user, is_banned: true, ban_reason: banReason }
-                            : user
+                        user.id === user_id ? { ...user, is_banned: true, ban_reason: "..." } : user
                     )
                 );
-                setMessage(response.data.message);
             }
-        } catch (error) {
-            setMessage("Eroare la banarea utilizatorului.");
+        }
+        catch (error) {
+            console.log("Eroare la banarea utilizatorului:", error);
         }
     };
 
@@ -69,6 +84,7 @@ function Users() {
 
     const handleRoleSelection = (userId, role) => {
         setSelectedUser(userId);
+
         setSelectedRole(role);
     };
 
@@ -215,36 +231,32 @@ function Users() {
 //     );
 
     return (
-        <table>
-            <tbody>
-                {users.map((u) => (
-                    <tr>
-                        <td>
-                            <div className="pula">
-                                <p className="level">Level {Math.floor(u.xp / 100)}</p>
-                                <td><div className="pfp"></div></td>
-                                {u.username}
-                                {u.is_banned && <p className="banned">Banned</p>}
-                            </div>
-                        </td>
-                        <td>
-                        </td>
-                        <td>{u.email}</td>
-                        <td>
-                            <select className="role-select">
+        <div className="users">
+            {users.map((u) => (
+                <div className="user">
+                    <div className="user-status">
+                        {!u.is_banned && <p className="level">Level {Math.floor(u.xp / 100)}</p>}
+                        {u.is_banned && <p className="banned">Banned</p>}
+                    </div>
+                    <div className="user-name">
+                        <div className="pfp"></div>
+                        <p className="name">{u.username} &nbsp; <p className="email">({u.email})</p></p>
+                    </div>
+                    {(user.id !== u.id && u.role !== "admin") && (
+                        <div className="user-options">
+                            <select value={u.role} className="role-select">
                                 <option value="user">User</option>
                                 <option value="reviewer">Reviewer</option>
                                 <option value="admin">Admin</option>
                             </select>
-                        </td>
-                        <td>
-                            <button className="ban-btn">Ban</button>
-                            <button className="kick-btn">Kick</button>
-                        </td>
-                    </tr>  
-                ))}
-            </tbody>
-        </table>
+                            <button className="btn">Kick</button>
+                            {!u.is_banned && <button className="btn" onClick={() => handleBan(u.id)}>Ban</button>}
+                            {u.is_banned && <button className="btn" onClick={() => handleUnban(u.id)}>Unban</button>}
+                        </div>
+                    )}
+                </div>
+            ))}
+        </div>
     );
 }
 
