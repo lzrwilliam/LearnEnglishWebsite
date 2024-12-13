@@ -72,9 +72,22 @@ class Notification(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) 
     message = db.Column(db.String(500), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     is_read = db.Column(db.Boolean, default=False)   
+
+    def to_dict(self):
+        sender = User.query.get(self.sender_id) if self.sender_id else None
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "sender_id": self.sender_id,
+            "sender_name": sender.username if sender else None, 
+            "message": self.message,
+            "created_at": self.created_at,
+            "is_read": self.is_read
+        }
 
 
 @app.route('/api/user_requests/<int:user_id>', methods=['GET'])
@@ -133,15 +146,7 @@ def get_notifications(user_id):
     notifications = pagination.items
 
     return {
-        "notifications": [
-            {
-                "id": notif.id,
-                "message": notif.message,
-                "created_at": notif.created_at,
-                "is_read": notif.is_read
-            }
-            for notif in notifications
-        ],
+        "notifications": [notif.to_dict() for notif in notifications],
         "total": pagination.total,
         "page": pagination.page,
         "pages": pagination.pages
@@ -213,6 +218,10 @@ def process_reviewer_request(request_id):
     action = data.get('action')  # approve/reject
     reviewer_id = data.get('reviewer_id')
 
+    reviewer = User.query.get(reviewer_id)
+    if not reviewer:
+        return {"message": "Reviewer-ul nu a fost găsit.", "status": "fail"}, 404
+
     request_obj = ReviewerRequest.query.get(request_id)
     if not request_obj:
         return {"message": "Solicitarea nu a fost găsită.", "status": "fail"}, 404
@@ -224,19 +233,16 @@ def process_reviewer_request(request_id):
     request_obj.reviewer_id = reviewer_id
     db.session.commit()
 
-    
-    #notificare pt user
     notification_message = (
         f"Solicitarea ta pentru exercițiul {request_obj.exercise_id} a fost "
-        + ("acceptată." if action == "approve" else "respinsă.")
+        + ("acceptată" if action == "approve" else "respinsă.")
     )
-    new_notification = Notification(user_id=request_obj.user_id, message=notification_message)
+
+    new_notification = Notification(user_id=request_obj.user_id, sender_id=reviewer_id, message=notification_message)
     db.session.add(new_notification)
     db.session.commit()
 
     return {"message": f"Solicitarea a fost {action}.", "status": "success"}, 200
-
-
 
 
    

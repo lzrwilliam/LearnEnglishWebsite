@@ -54,10 +54,14 @@ function UserNotifications() {
                     <li
                         key={notif.id}
                         className={`notification-item ${
+                        
                             notif.is_read ? "read" : "unread"
                         }`}
                     >
-                        <p>{notif.message}</p>
+                        <p>{notif.message}
+                      
+
+                        </p>
                         <p><small>{new Date(notif.created_at).toLocaleString()}</small></p>
                         <div className="actions">
                             {!notif.is_read && <button onClick={() => markAsRead(notif.id)}>✔ Mark as read</button>}
