@@ -161,7 +161,7 @@ function Reviewer() {
       <h2>Reviewer - Lista Exercițiilor</h2>
       {message && <p className="message">{message}</p>}
       <button className="add-button" onClick={() => setShowForm(true)}>
-        ➕ Adaugă Exercițiu
+      ✔ Adaugă Exercițiu
       </button>
       {showForm && (
         <div className="form-container">

@@ -60,14 +60,8 @@ function UserNotifications() {
                         <p>{notif.message}</p>
                         <p><small>{new Date(notif.created_at).toLocaleString()}</small></p>
                         <div className="actions">
-                            {!notif.is_read && (
-                                <button onClick={() => markAsRead(notif.id)}>
-                                    ✔️ Mark as read
-                                </button>
-                            )}
-                            <button onClick={() => deleteNotification(notif.id)}>
-                                🗑️ Delete
-                            </button>
+                            {!notif.is_read && <button onClick={() => markAsRead(notif.id)}>✔ Mark as read</button>}
+                            <button onClick={() => deleteNotification(notif.id)}>🗑️ Delete</button>
                         </div>
                     </li>
                 ))}
