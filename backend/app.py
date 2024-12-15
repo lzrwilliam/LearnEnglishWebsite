@@ -247,6 +247,45 @@ def process_reviewer_request(request_id):
 
    
     
+@app.route('/api/leaderboard', methods=['GET'])
+def get_leaderboard():
+    user_id = request.args.get("user_id", type=int)
+
+    if not user_id:
+        return {"message": "User ID is required.", "status": "fail"}, 400
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return {"message": "User not found.", "status": "fail"}, 404
+
+    leaderboard_users = User.query.filter_by(is_banned=False).order_by(User.xp.desc()).all()
+
+    leaderboard = [
+        {
+            "username": u.username,
+            "xp": u.xp,
+            **({"id": u.id} if user.role == "admin" else {})
+        }
+        for u in leaderboard_users
+    ]
+
+    if user.role == "admin":
+        banned_users = User.query.filter_by(is_banned=True).order_by(User.username).all()
+        leaderboard.extend([
+            {
+                "id": u.id,
+                "username": u.username,
+                "xp": u.xp,
+                "is_banned": True
+               
+            }
+            for u in banned_users
+        ])
+
+    return {"leaderboard": leaderboard}, 200
+
+
 @app.route('/api/admin/unban_user', methods=['POST'])
 def unban_user():
 
