@@ -15,9 +15,11 @@ function Login() {
 
         try {
             const response = await api.post("/login", { username, password });
+            const { user, token } = response.data;
 
+           
             if (response.data.status === "success")
-                login(response.data.user, remember);
+                login(user, token,remember);
             else
                 setMessage(response.data.message);
 

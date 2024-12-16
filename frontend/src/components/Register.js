@@ -23,8 +23,10 @@ function Register() {
                 role,
                 difficulty, // Send difficulty to the backend
             });
+            const { user, token } = response.data;
+
             if (response.data.status === "success") {
-                login(response.data.user, false); // Log in the user immediately after registration
+                login(user, token,false); // Log in the user immediately after registration
                 window.location.href = "/";
             } else {
                 setMessage(response.data.message);

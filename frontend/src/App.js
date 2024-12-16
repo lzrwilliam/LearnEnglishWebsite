@@ -51,20 +51,26 @@ function App() {
 
     }, [user]);
 
-    const login = (userData, remember) => {
+    const login = (userData, token, remember) => {
         setUser(userData);
-
-        if (remember)
+    
+        if (remember) {
             localStorage.setItem("user", JSON.stringify(userData));
-        else
+            localStorage.setItem("token", token); // Stochează token-ul în localStorage
+        } else {
             sessionStorage.setItem("user", JSON.stringify(userData));
+            sessionStorage.setItem("token", token); // Stochează token-ul în sessionStorage
+        }
     };
+    
 
     const logout = () => {
         setUser(null);
 
         localStorage.removeItem("user");
         sessionStorage.removeItem("user");
+        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
 
         window.location.href = "/login";
     };
@@ -117,7 +123,6 @@ function App() {
                         
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
                         <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
-
                         {/* probabil ca putem sa facem mai bine aici */}
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}
                         {user?.role === "admin"  &&(<Route path="/admin/users" element= {<Users/>} />)}
