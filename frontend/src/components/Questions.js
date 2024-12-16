@@ -2,8 +2,9 @@ import React, { useState, useContext, useEffect } from "react";
 import api from "../api";
 import { AuthContext } from "../App";
 
+
 function Questions({updateXp}) {
-    const { user } = useContext(AuthContext);
+    const { user} = useContext(AuthContext); 
     const [questions, setQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [sessionQuestions, setSessionQuestions] = useState([]);
@@ -15,10 +16,8 @@ function Questions({updateXp}) {
     const [reportMessage, setReportMessage] = useState("");
     const [hasActiveRequest, setHasActiveRequest] = useState(false); // verifi daca user a facut cerere pt ex curent
     const [showReportBox, setShowReportBox] = useState(false); // sa afisam caseta text pt report la ex
-
-
-
-
+   
+   
     const [userResponses, setUserResponses] = useState({}); // sa mentinem raspunsurile utilizatorului la intrb raspunse cand navigheaza prin intrebari
 
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
@@ -41,6 +40,7 @@ function Questions({updateXp}) {
             console.error("Error fetching questions:", error);
         }
     };
+
 
     const checkActiveRequest = async () => {
         try {
@@ -321,8 +321,8 @@ function Questions({updateXp}) {
                 {questions.length === 0 ? (<button onClick={fetchQuestions} className="accent-btn">Start</button>) : (
                     renderQuestionIndicators()
                 )}
-                
             </div>
+
 
             { questions.length > 0  && (
                 <div className="question">

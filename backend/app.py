@@ -10,6 +10,18 @@ from sqlalchemy.sql import text
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import func
 
+
+import os
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
+
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pictures')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 app = Flask(__name__)
 #CORS(app)
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -19,9 +31,14 @@ with open('config.json', 'r') as f:
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config['database']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 class User(db.Model):
 
@@ -36,6 +53,8 @@ class User(db.Model):
     ban_reason = db.Column(db.String(255), nullable=True)
     xp = db.Column(db.Integer, default=0)
     difficulty = db.Column(db.String(20), nullable=False, default="easy")
+    profile_picture = db.Column(db.String(255), nullable=True)  
+
 
     def to_dict(self):
         return {
@@ -47,6 +66,8 @@ class User(db.Model):
             "ban_reason": self.ban_reason,
             "xp": self.xp,
             "difficulty": self.difficulty,
+            "profile_picture": f"/pictures/{self.profile_picture}" if self.profile_picture else None,
+
         }
 
     def __repr__(self):
@@ -88,6 +109,53 @@ class Notification(db.Model):
             "created_at": self.created_at,
             "is_read": self.is_read
         }
+    
+
+
+
+
+
+@app.route('/api/upload_profile_picture/<int:user_id>', methods=['POST'])
+def upload_profile_picture(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return {"message": "User not found.", "status": "fail"}, 404
+
+    if 'file' not in request.files:
+        return {"message": "No file part.", "status": "fail"}, 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return {"message": "No selected file.", "status": "fail"}, 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"user_{user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file.filename.rsplit('.', 1)[1].lower()}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        # Ștergem imaginea veche dacă există
+        if user.profile_picture:
+            old_filepath = os.path.join(app.config['UPLOAD_FOLDER'], user.profile_picture)
+            if os.path.exists(old_filepath):
+                os.remove(old_filepath)
+
+        # Salvăm noua imagine
+        file.save(filepath)
+
+        # Actualizăm baza de date
+        user.profile_picture = filename
+        db.session.commit()
+
+        return {"message": "Profile picture uploaded successfully.", "status": "success", "profile_picture": filename}, 200
+
+    return {"message": "File not allowed.", "status": "fail"}, 400
+
+
+
+
+@app.route('/pictures/<filename>', methods=['GET'])
+def serve_profile_picture(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+   
 
 
 @app.route('/api/user_requests/<int:user_id>', methods=['GET'])
