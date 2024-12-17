@@ -16,9 +16,6 @@ function Questions({updateXp}) {
     const [hasActiveRequest, setHasActiveRequest] = useState(false); // verifi daca user a facut cerere pt ex curent
     const [showReportBox, setShowReportBox] = useState(false); // sa afisam caseta text pt report la ex
 
-
-
-
     const [userResponses, setUserResponses] = useState({}); // sa mentinem raspunsurile utilizatorului la intrb raspunse cand navigheaza prin intrebari
 
     const shuffleArray = (array) => array.sort(() => Math.random() - 0.5);
@@ -59,7 +56,7 @@ function Questions({updateXp}) {
     // Trimiterea unei cereri de review
     const submitReport = async () => {
         if (!reportMessage.trim()) {
-            alert("Mesajul nu poate fi gol!");
+            setShowReportBox(false);
             return;
         }
         try {
@@ -68,9 +65,9 @@ function Questions({updateXp}) {
                 exercise_id: questions[currentQuestion].id,
                 message: reportMessage,
             });
-            alert("Solicitarea ta a fost trimisă.");
             setReportMessage("");
             setHasActiveRequest(true); // Marchez cererea ca activă
+            setShowReportBox(false);
         } catch (error) {
             console.error("Error submitting report:", error);
         }
@@ -368,11 +365,10 @@ function Questions({updateXp}) {
                 alert("You already have an active report for this exercise.");
             } else {
                 setHasActiveRequest(false);
-                setShowReportBox(!showReportBox); 
+                setShowReportBox(true); 
             }
         } catch (error) {
             console.error("Eroare la verificarea cererii active:", error);
-            alert("A apărut o eroare. Încercați din nou.");
         }
     }}
 >
@@ -388,22 +384,22 @@ function Questions({updateXp}) {
 
 
                     {showReportBox && !hasActiveRequest && (
-    <div className="suggestion-container">
-        <textarea
-            className="suggestion-textarea"
-            placeholder="Scrie un mesaj pentru reviewer..."
-            value={reportMessage}
-            onChange={(e) => setReportMessage(e.target.value)}
-        />
-        <button
-            className="suggestion-button"
-            onClick={() => {
-                submitReport();
-                setShowReportBox(false); // Închide caseta după trimitere
-            }}
-        >
-            Trimite
-        </button>
+    <div className="overlay" onMouseDown={() => setShowReportBox(false)}>
+        <div class="form-container" onMouseDown={(e) => e.stopPropagation()}>
+            <h2>Report</h2>
+            <textarea
+                className="suggestion-textarea"
+                placeholder="Scrie un mesaj pentru reviewer..."
+                value={reportMessage}
+                onChange={(e) => setReportMessage(e.target.value)}
+            />
+            <button
+                className="accent-btn"
+                onClick={() => {submitReport();}}
+            >
+                Trimite
+            </button>
+        </div>
     </div>
 )}
                 </div>
