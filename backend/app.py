@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +10,22 @@ from sqlalchemy.sql import text
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import func
 
+
+import os
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
+
+
+from functools import wraps
+from flask import request, jsonify
+import jwt
+
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pictures')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 app = Flask(__name__)
 #CORS(app)
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
@@ -19,9 +35,76 @@ with open('config.json', 'r') as f:
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config['database']
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = config['SECRET_KEY']
+SECRET_KEY = app.config['SECRET_KEY']
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def generate_token(user_id):
+    payload = {
+        'user_id': user_id,
+        'exp': datetime.now(timezone.utc) + timedelta(hours=1)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+def verify_token(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload['user_id']
+    except jwt.ExpiredSignatureError:
+        return None  # Token expirat
+    except jwt.InvalidTokenError:
+        return None  # Token invalid
+
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"message": "Token is missing!"}), 403
+        try:
+            decoded = jwt.decode(token.split()[1], SECRET_KEY, algorithms=["HS256"])
+            request.user_id = decoded['user_id']
+        except:
+            return jsonify({"message": "Invalid token!"}), 403
+        return f(*args, **kwargs)
+    return decorated
+
+
+def role_required(required_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            token = request.headers.get("Authorization")
+            if not token:
+                return jsonify({"message": "Token is missing!"}), 403
+            try:
+                decoded = jwt.decode(token.split()[1], app.config['SECRET_KEY'], algorithms=["HS256"])
+                user_id = decoded['user_id']
+                user = User.query.get(user_id)
+                if not user:
+                    return jsonify({"message": "User not found!"}), 403
+                if user.role.lower() not in [r.lower() for r in required_roles]:
+                    return jsonify({"message": "Access denied! Insufficient permissions."}), 403
+                request.user = user  
+            except jwt.ExpiredSignatureError:
+                return jsonify({"message": "Token expired!"}), 403
+            except jwt.InvalidTokenError:
+                return jsonify({"message": "Invalid token!"}), 403
+            return f(*args, **kwargs)
+        return decorated
+    return decorator
+
+
+
 
 class User(db.Model):
 
@@ -36,6 +119,8 @@ class User(db.Model):
     ban_reason = db.Column(db.String(255), nullable=True)
     xp = db.Column(db.Integer, default=0)
     difficulty = db.Column(db.String(20), nullable=False, default="easy")
+    profile_picture = db.Column(db.String(255), nullable=True)  
+
 
     def to_dict(self):
         return {
@@ -47,6 +132,8 @@ class User(db.Model):
             "ban_reason": self.ban_reason,
             "xp": self.xp,
             "difficulty": self.difficulty,
+            "profile_picture": f"/pictures/{self.profile_picture}" if self.profile_picture else None,
+
         }
 
     def __repr__(self):
@@ -88,6 +175,53 @@ class Notification(db.Model):
             "created_at": self.created_at,
             "is_read": self.is_read
         }
+    
+
+
+
+
+
+@app.route('/api/upload_profile_picture/<int:user_id>', methods=['POST'])
+def upload_profile_picture(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return {"message": "User not found.", "status": "fail"}, 404
+
+    if 'file' not in request.files:
+        return {"message": "No file part.", "status": "fail"}, 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return {"message": "No selected file.", "status": "fail"}, 400
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"user_{user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file.filename.rsplit('.', 1)[1].lower()}")
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+        # Ștergem imaginea veche dacă există
+        if user.profile_picture:
+            old_filepath = os.path.join(app.config['UPLOAD_FOLDER'], user.profile_picture)
+            if os.path.exists(old_filepath):
+                os.remove(old_filepath)
+
+        # Salvăm noua imagine
+        file.save(filepath)
+
+        # Actualizăm baza de date
+        user.profile_picture = filename
+        db.session.commit()
+
+        return {"message": "Profile picture uploaded successfully.", "status": "success", "profile_picture": filename}, 200
+
+    return {"message": "File not allowed.", "status": "fail"}, 400
+
+
+
+
+@app.route('/pictures/<filename>', methods=['GET'])
+def serve_profile_picture(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+   
 
 
 @app.route('/api/user_requests/<int:user_id>', methods=['GET'])
@@ -306,7 +440,6 @@ def unban_user():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-
     data = request.json
     username = data.get('username')
     password = data.get('password')
@@ -319,15 +452,18 @@ def login():
     if user.is_banned:
         return {"message": f"You are banned: {user.ban_reason}", "status": "banned"}, 403
 
-    return {
+    token = generate_token(user.id)  # Generăm token-ul JWT
+
+    return jsonify({  # Asigură-te că folosești jsonify pentru răspuns
         "message": "Login successful.",
         "status": "success",
-        "user": user.to_dict()
-    }, 200
+        "user": user.to_dict(),
+        "token": token
+    }), 200
+
 
 @app.route('/api/register', methods=['POST'])
 def register():
-
     data = request.json
     username = data.get('username')
     email = data.get('email')
@@ -348,11 +484,16 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return {
+    token = generate_token(new_user.id)  # Generăm token-ul JWT
+
+    return jsonify({  # Asigură-te că folosești jsonify pentru răspuns
         "message": "Înregistrare reușită!",
         "status": "success",
-        "user": new_user.to_dict()
-    }, 201
+        "user": new_user.to_dict(),
+        "token": token
+    }), 201
+
+
 
 @app.route('/api/admin/users', methods=['GET'])
 def get_users():
@@ -482,7 +623,11 @@ def get_questions():
 
     return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
 
+
+
 @app.route('/api/reviewer/exercises', methods=['GET'])
+@token_required
+@role_required(["reviewer"])
 def get_reviewer_exercises():
 
     exercises = Exercise.query.all()
