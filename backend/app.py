@@ -434,7 +434,7 @@ def login():
         return {"message": "Username or password incorrect.", "status": "fail"}, 401
 
     if user.is_banned:
-        return {"message": f"You are banned: {user.ban_reason}", "status": "banned"}, 403
+        return {"message": f"Your account has been banned.", "status": "banned"}, 403
 
     token = generate_token(user.id)  # Generăm token-ul JWT
 

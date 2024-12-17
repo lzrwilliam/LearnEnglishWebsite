@@ -21,7 +21,7 @@ function Leaderboard() {
 
         fetchUsers();
 
-    }, [user]);
+    }, [users]);
 
     const handleBan = async (user_id) => {
         try {
@@ -68,27 +68,24 @@ function Leaderboard() {
             <tbody>
                 {users.map((u, index) => (
                     <tr key={u.id}>
-                        <td align="center">
-                            {u.is_banned ? <div className="banned">Banned</div> : <div className="level">Level {Math.floor(u.xp / 100)}</div>}
-                        </td>
-                        <td style={{width: "100%"}}>
+                        <td align="center">{index + 1}</td>
+                        {user.role === "admin" && <td align="center">{u.email}</td>}
+                        <td style={{ width: "100%" }}>
                             <div className="user">
+                                {u.is_banned ? <div className="banned">Banned</div> : <div className="level">Level {Math.floor(u.xp / 100)}</div>}
                                 <div className="pfp"/>
                                 <div className="name">{u.username}</div>
-                                {user.role === "admin" && <div className="email">&nbsp;({u.email})</div>}
+                                <div className="email">({u.xp})</div>
                             </div>
                         </td>
-
                         {user.role === "admin" &&
                             <td align="center">
-                                {u.role != "admin" &&
-                                    <div className="review-buttons">
-                                        <button className="btn" onClick={() => handleKick(u.id)}>Kick</button>
-                                        {u.is_banned 
-                                        ? <button className="btn" onClick={() => handleUnban(u.id)}>Unban</button> 
-                                        : <button className="btn" onClick={() => handleBan(u.id)}>Ban</button>}
-                                    </div>
-                                }
+                                <div className="review-buttons">
+                                    <button className="btn" onClick={() => handleKick(u.id)} disabled={u.role === "admin"}>Kick</button>
+                                    {u.is_banned 
+                                    ? <button className="btn" onClick={() => handleUnban(u.id)}>Unban</button> 
+                                    : <button className="btn" onClick={() => handleBan(u.id)} disabled={u.role === "admin"}>Ban</button>}
+                                </div>
                             </td>
                         }
                     </tr>

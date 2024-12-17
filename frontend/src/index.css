@@ -349,6 +349,7 @@ ul {
   user-select: none;
   align-items: center;
   gap: 10px;
+  justify-content: space-between;
 }
 
 .indicator {
@@ -496,12 +497,17 @@ ul {
   cursor: pointer;
 }
 
+.btn:disabled {
+  background: white;
+  cursor: default;
+}
+
 .name {
   display: flex;
   flex-direction: row;
   font-weight: 600;
   margin: 0px;
-  margin-left: 20px;
+  /* margin-left: 20px; */
 }
 
 .email {
@@ -675,7 +681,6 @@ ul {
   background: var(--accent-hover-color);
 }
 
-
 /* butoane editare la request rewiers*/
 .button-container {
   display: flex;
@@ -813,4 +818,5 @@ tr:nth-child(even) {
   flex-direction: row;
   align-items: center;
   flex-grow: 1;
+  gap: 10px;
 }
