@@ -395,27 +395,11 @@ def get_leaderboard():
 
     leaderboard_users = User.query.filter_by(is_banned=False).order_by(User.xp.desc()).all()
 
-    leaderboard = [
-        {
-            "username": u.username,
-            "xp": u.xp,
-            **({"id": u.id} if user.role == "admin" else {})
-        }
-        for u in leaderboard_users
-    ]
+    leaderboard = [u.to_dict() for u in leaderboard_users]
 
     if user.role == "admin":
         banned_users = User.query.filter_by(is_banned=True).order_by(User.username).all()
-        leaderboard.extend([
-            {
-                "id": u.id,
-                "username": u.username,
-                "xp": u.xp,
-                "is_banned": True
-               
-            }
-            for u in banned_users
-        ])
+        leaderboard.extend([ u.to_dict() for u in banned_users])
 
     return {"leaderboard": leaderboard}, 200
 

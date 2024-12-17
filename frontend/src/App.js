@@ -2,7 +2,7 @@ import React, { useState, createContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Users from "./components/Users";
+import Leaderboard from "./components/Leaderboard";
 import Questions from "./components/Questions";
 import Requests from "./components/Requests";
 import Notifications from "./components/Notifications";
@@ -123,9 +123,11 @@ function App() {
                         
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
                         <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
+                        <Route path="/leaderboards" element={<ProtectedRoute><Leaderboard/></ProtectedRoute>} />
+
                         {/* probabil ca putem sa facem mai bine aici */}
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}
-                        {user?.role === "admin"  &&(<Route path="/admin/users" element= {<Users/>} />)}
+                        {/* {user?.role === "admin"  &&(<Route path="/admin/users" element= {<Users/>} />)} */}
                         {user?.role === "reviewer" && <Route path="/reviewer/exercises" element={<Reviewer/>} />}
                         {user?.role === "reviewer" && <Route path="/reviewer/requests" element={<ReviewerPendingRequests/>} />}
                     
