@@ -264,6 +264,7 @@ input[type="checkbox"], input[type="radio"] {
   border-radius: 10px;
   user-select: none;
   width: fit-content;
+  white-space: nowrap;
 }
 
 .menu .level {
