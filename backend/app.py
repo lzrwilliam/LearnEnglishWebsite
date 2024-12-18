@@ -74,16 +74,14 @@ def upload_profile_picture(user_id):
         filename = secure_filename(f"user_{user.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file.filename.rsplit('.', 1)[1].lower()}")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        # Ștergem imaginea veche dacă există
+        # stergem imaginea veche dacă exista
         if user.profile_picture:
             old_filepath = os.path.join(app.config['UPLOAD_FOLDER'], user.profile_picture)
             if os.path.exists(old_filepath):
                 os.remove(old_filepath)
 
-        # Salvăm noua imagine
+      
         file.save(filepath)
-
-        # Actualizăm baza de date
         user.profile_picture = filename
         db.session.commit()
 
@@ -203,13 +201,13 @@ def register():
     difficulty = data.get('difficulty', 'easy')
 
     if not username or not email or not password or not role or not difficulty:
-        return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
+        return {"message": "All field required!", "status": "fail"}, 400
 
     if User.query.filter_by(username=username).first():
-        return {"message": "Username-ul există deja!", "status": "fail"}, 400
+        return {"message": "Username aleready exists!", "status": "fail"}, 400
 
     if User.query.filter_by(email=email).first():
-        return {"message": "Email-ul există deja!", "status": "fail"}, 400
+        return {"message": "Email already registered!", "status": "fail"}, 400
 
     new_user = User(username=username, email=email, password=password, role=role, difficulty=difficulty)
     db.session.add(new_user)
@@ -218,7 +216,7 @@ def register():
     token = generate_token(new_user.id)  # Generăm token-ul JWT
 
     return jsonify({  # Asigură-te că folosești jsonify pentru răspuns
-        "message": "Înregistrare reușită!",
+        "message": "Registration succesful!",
         "status": "success",
         "user": new_user.to_dict(),
         "token": token
@@ -270,12 +268,12 @@ def submit_answer():
     answer = data.get('answer')
 
     if not all([user_id, question_id, answer]):
-        return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
+        return {"message": "All field required!", "status": "fail"}, 400
 
     question = Exercise.query.get(question_id)
 
     if not question:
-        return {"message": "Întrebarea nu există.", "status": "fail"}, 404
+        return {"message": "Question does not exist.", "status": "fail"}, 404
 
     # Verificăm dacă întrebarea a fost deja răspunsă
     # progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
@@ -315,7 +313,7 @@ def submit_answer():
     db.session.add(progress)
     db.session.commit()
 
-    return {"message": "Răspuns trimis.", "correct": correct, "user_xp": user.xp, "status": "success"}, 200
+    return {"message": "Answer sent.", "correct": correct, "user_xp": user.xp, "status": "success"}, 200
 
 
 
