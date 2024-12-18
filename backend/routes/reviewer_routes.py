@@ -151,3 +151,7 @@ def delete_exercise(exercise_id):
       
         print(f"Error deleting exercise with ID {exercise_id}: {e}")
         return {"message": "Eroare la ștergerea exercițiului.", "status": "fail", "error": str(e)}, 500
+    
+    
+    
+    

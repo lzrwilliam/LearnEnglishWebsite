@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import User, Exercise, db
+from models import User, Exercise, db, RoleRequest, Notification
 from auth import token_required, role_required
 
 
@@ -79,4 +79,45 @@ def unban_user():
 
     return {"message": f"User {user.username} has been unbanned.", "status": "success"}, 200
 
+
+@admin_bp.route('/role_requests', methods=['GET'])
+@token_required
+def get_role_requests():
+    role_requests = RoleRequest.query.filter_by(status="pending").all()
+    return jsonify({"requests": [r.to_dict() for r in role_requests]}), 200
+
+
+@admin_bp.route('/role_requests/<int:request_id>', methods=['PUT'])
+@token_required
+def handle_role_request(request_id):
+    data = request.json
+    action = data.get("action")  # "approve" sau "reject"
+
+    role_request = RoleRequest.query.get(request_id)
+    if not role_request:
+        return jsonify({"message": "Cererea nu există.", "status": "fail"}), 404
+
+    if action not in ["approve", "reject"]:
+        return jsonify({"message": "Acțiune invalidă.", "status": "fail"}), 400
+
+    role_request.status = "approved" if action == "approve" else "rejected"
+    if action == "approve":
+        user = User.query.get(role_request.user_id)
+        user.role = role_request.role_requested
+
+    db.session.commit()
+
+    notification_message = (
+        f"Cererea ta pentru rolul {role_request.role_requested} a fost aprobata."
+        if action == "approve" else
+        f"Cererea ta pentru rolul {role_request.role_requested} a fost respinsa."
+    )
+    new_notification = Notification(
+        user_id=role_request.user_id,
+        message=notification_message
+    )
+    db.session.add(new_notification)
+    db.session.commit()
+
+    return jsonify({"message": f"Cererea a fost {action}-ată.", "status": "success"}), 200
 

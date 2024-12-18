@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Reviewer from "./components/Reviewer";
 import ProfilePicture from "./components/ProfilePicture";
 import ReviewerPendingRequests from "./components/ReviewerPendingRequests";
+import AdminRequests from "./components/AdminRequests";
 
 export const AuthContext = createContext();
 
@@ -130,7 +131,7 @@ function App() {
                         <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
 
                         {/* probabil ca putem sa facem mai bine aici */}
-                        {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}
+                        {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<AdminRequests/>} />)}
                         {/* {user?.role === "admin"  &&(<Route path="/admin/users" element= {<Users/>} />)} */}
                         {user?.role === "reviewer" && <Route path="/reviewer/exercises" element={<Reviewer/>} />}
                         {user?.role === "reviewer" && <Route path="/reviewer/requests" element={<ReviewerPendingRequests/>} />}

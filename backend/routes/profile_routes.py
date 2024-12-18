@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, User
+from models import db, User,RoleRequest
 from auth import token_required
 
 
@@ -59,4 +59,39 @@ def delete_account():
     db.session.commit()
 
     return jsonify({"message": "Account deleted!.", "status": "success"}), 200
+
+
+@profile_bp.route('/request_role', methods=['POST'])
+@token_required
+def request_role():
+    user_id = request.user_id
+    data = request.json
+    role_requested = data.get("role")
+
+    if role_requested not in ["admin", "reviewer"]:
+        return jsonify({"message": "Rol invalid.", "status": "fail"}), 400
+
+    existing_request = RoleRequest.query.filter_by(user_id=user_id, status="pending").first()
+    if existing_request:
+        return jsonify({"message": "Aveți deja o cerere în așteptare.", "status": "fail"}), 400
+
+    new_request = RoleRequest(user_id=user_id, role_requested=role_requested)
+    db.session.add(new_request)
+    db.session.commit()
+
+    return jsonify({"message": "Request sent.", "status": "success"}), 201
+
+@profile_bp.route('/role_request_status', methods=['GET'])
+@token_required
+def check_role_request_status():
+    user_id = request.user_id
+    existing_request = RoleRequest.query.filter_by(user_id=user_id, status="pending").first()
+
+    if existing_request:
+        return jsonify({
+            "has_request": True,
+            "role_requested": existing_request.role_requested
+        }), 200
+    else:
+        return jsonify({"has_request": False}), 200
 

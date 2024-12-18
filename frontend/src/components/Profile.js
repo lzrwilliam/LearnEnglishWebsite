@@ -8,6 +8,8 @@ function Profile() {
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState("");
+    const [roleRequestStatus, setRoleRequestStatus] = useState({ has_request: false, role_requested: null });
+
 
 
        const fetchUpdatedUser = async () => {
@@ -23,6 +25,19 @@ function Profile() {
     useEffect(() => {
         fetchUpdatedUser();
     }, []);
+
+    const fetchRoleRequestStatus = async () => {
+      try {
+          const response = await api.get("/profile/role_request_status");
+          setRoleRequestStatus(response.data);
+      } catch (error) {
+          console.error("Error checking role request status:", error);
+      }
+  };
+
+  useEffect(() => {
+      fetchRoleRequestStatus();
+  }, []);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -95,7 +110,7 @@ function Profile() {
             const response = await api.delete("/profile/delete_account");
             setMessage(response.data.message);
             setStatus("success");            
-            setUser(null); // Setează contextul pe null
+            setUser(null); 
             localStorage.removeItem("user");
              sessionStorage.removeItem("user");
            localStorage.removeItem("token");
@@ -106,6 +121,19 @@ function Profile() {
             setStatus("fail");
         }
     };
+
+    const handleRoleRequest = async (role) => {
+      try {
+          const response = await api.post("/profile/request_role", { role });
+          setMessage(response.data.message);
+          setStatus("success");
+          fetchRoleRequestStatus(); 
+      } catch (error) {
+          setMessage(error.response?.data?.message || "An error occurred.");
+          setStatus("fail");
+      }
+  };
+
     
 
     return (
@@ -136,12 +164,22 @@ function Profile() {
             <div className="line"/>
             <div className="row">
                 <label>Request admin role, this will enable you to kick or ban users.</label>
-                <button className="accent-btn">Request</button>
+                <button className="accent-btn"  onClick={() => handleRoleRequest("admin")} disabled={roleRequestStatus.has_request || user.role==="admin"}> 
+                {user.role === "admin"
+                        ? "Admin Role Active"
+                        : roleRequestStatus.has_request && roleRequestStatus.role_requested === "admin"
+                        ? "Request Pending"
+                        : "Request"}</button>
             </div>
             <div className="line"/>
             <div className="row">
                 <label>Request reviewer role, this will allow out to modify or add new exercises.</label>
-                <button className="accent-btn">Request</button>
+                <button className="accent-btn"  onClick={() => handleRoleRequest("reviewer")} disabled={roleRequestStatus.has_request || user.role==="reviewer"}> 
+                {user.role === "reviewer"
+                        ? "Reviewer Role Active"
+                        : roleRequestStatus.has_request && roleRequestStatus.role_requested === "reviewer"
+                        ? "Request Pending"
+                        : "Request"}</button>
             </div>
             <div className="line"/>
             <div className="row">

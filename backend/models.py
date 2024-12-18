@@ -127,3 +127,28 @@ class UserQuestionProgress(db.Model):
             "question_id": self.question_id,
             "answered_correctly": self.answered_correctly,
         }
+        
+        
+class RoleRequest(db.Model):
+    __tablename__ = 'role_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    role_requested = db.Column(db.String(20), nullable=False)  # "admin" sau "reviewer"
+    status = db.Column(db.String(20), default="pending")  # "pending", "approved", "rejected"
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+
+    user = db.relationship('User', backref="role_requests")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "username": self.user.username,  
+            "role_requested": self.role_requested,
+            "status": self.status,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
+        
