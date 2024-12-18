@@ -46,6 +46,45 @@ function Profile() {
         }
       };
 
+
+      const handleDifficultyChange = async (e) => {
+        const newDifficulty = e.target.value.toLowerCase();
+        try {
+            const response = await api.put("/profile/update_difficulty", { difficulty: newDifficulty });
+            setMessage(response.data.message);
+            setStatus("success");
+        } catch (error) {
+            setMessage(error.response?.data?.message || "An error occurred.");
+            setStatus("fail");
+        }
+    };
+    
+   
+    
+    const handleResetProgress = async () => {
+        try {
+            const response = await api.delete("/profile/reset_progress");
+            setMessage(response.data.message);
+            setStatus("success");
+        } catch (error) {
+            setMessage(error.response?.data?.message || "An error occurred.");
+            setStatus("fail");
+        }
+    };
+    
+    const handleDeleteAccount = async () => {
+        try {
+            const response = await api.delete("/profile/delete_account");
+            setMessage(response.data.message);
+            setStatus("success");
+            // Logout user or redirect to login
+        } catch (error) {
+            setMessage(error.response?.data?.message || "An error occurred.");
+            setStatus("fail");
+        }
+    };
+    
+
     return (
         <div class="profile">
             <h1>Profile</h1>
@@ -65,7 +104,7 @@ function Profile() {
             </div>
             <div className="row">
                 <label>Difficulty</label>
-                <select value={user.difficulty.charAt(0).toUpperCase() + user.difficulty.slice(1) }>
+                <select value={user.difficulty.charAt(0).toUpperCase() + user.difficulty.slice(1) }  onChange={handleDifficultyChange}>
                     <option>Easy</option>
                     <option>Medium</option>
                     <option>Hard</option>
@@ -84,12 +123,12 @@ function Profile() {
             <div className="line"/>
             <div className="row">
                 <label>Reset the progress on this account, including xp.</label>
-                <button className="accent-btn">Reset</button>
+                <button className="accent-btn" onClick={handleResetProgress}>Reset</button>
             </div>
             <div className="line"/>
             <div className="row">
                 <label>Delete this account, this action cannot be undone.</label>
-                <button className="accent-btn reject-btn">Delete</button>
+                <button className="accent-btn reject-btn" onClick={handleDeleteAccount}>Delete</button>
             </div>
         </div>
     );

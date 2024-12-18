@@ -166,7 +166,7 @@ function Reviewer() {
                                     setNewExercise({ ...newExercise, question: e.target.value })
                                 } />
                             
-                            <label>Dificulty:</label>
+                            <label>Difficulty:</label>
                             <select value={newExercise.difficulty}
                                 onChange={(e) =>
                                     setNewExercise({ ...newExercise, difficulty: e.target.value })
@@ -229,7 +229,7 @@ function Reviewer() {
                                     })
                                 } />
                                 
-                            <label>Dificulty:</label>
+                            <label>Difficulty:</label>
                             <select value={editingExercise.difficulty || "easy"}
                                 onChange={(e) =>
                                     setEditingExercise({

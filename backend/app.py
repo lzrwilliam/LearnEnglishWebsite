@@ -25,6 +25,7 @@ from config import Config
 from routes.admin_routes import admin_bp
 from routes.reviewer_routes import reviewer_bp
 from routes.user_routes import user_bp
+from routes.profile_routes import profile_bp
 
 
 
@@ -52,6 +53,7 @@ def allowed_file(filename):
 app.register_blueprint(admin_bp)
 app.register_blueprint(reviewer_bp)
 app.register_blueprint(user_bp)
+app.register_blueprint(profile_bp)
 
 
 
