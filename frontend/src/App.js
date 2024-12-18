@@ -74,8 +74,10 @@ function App() {
         window.location.href = "/login";
     };
 
+    
+
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout ,setUser,updateXp}}>
             <BrowserRouter>
                 {user && (
                     <div className="menu">

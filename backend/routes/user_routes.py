@@ -94,3 +94,12 @@ def check_active_request():
 
     return {"hasActiveRequest": bool(active_request)}, 200
 
+
+@user_bp.route('/api/user/<int:user_id>', methods=['GET'])
+@token_required
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found.", "status": "fail"}), 404
+    
+    return jsonify({"user": user.to_dict(), "status": "success"}), 200

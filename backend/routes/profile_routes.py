@@ -59,3 +59,4 @@ def delete_account():
     db.session.commit()
 
     return jsonify({"message": "Account deleted!.", "status": "success"}), 200
+

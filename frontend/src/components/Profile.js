@@ -4,10 +4,25 @@ import { AuthContext } from "../App";
 
 
 function Profile() {
-    const { user } = useContext(AuthContext);
+    const { user, setUser } = useContext(AuthContext);
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState("");
+
+
+       const fetchUpdatedUser = async () => {
+        try {
+            const response = await api.get(`/user/${user.id}`); 
+            setUser(response.data.user);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+        } catch (error) {
+            console.error("Error fetching updated user:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUpdatedUser();
+    }, []);
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -53,6 +68,7 @@ function Profile() {
             const response = await api.put("/profile/update_difficulty", { difficulty: newDifficulty });
             setMessage(response.data.message);
             setStatus("success");
+           fetchUpdatedUser();
         } catch (error) {
             setMessage(error.response?.data?.message || "An error occurred.");
             setStatus("fail");
@@ -66,6 +82,8 @@ function Profile() {
             const response = await api.delete("/profile/reset_progress");
             setMessage(response.data.message);
             setStatus("success");
+            fetchUpdatedUser();
+
         } catch (error) {
             setMessage(error.response?.data?.message || "An error occurred.");
             setStatus("fail");
@@ -76,8 +94,13 @@ function Profile() {
         try {
             const response = await api.delete("/profile/delete_account");
             setMessage(response.data.message);
-            setStatus("success");
-            // Logout user or redirect to login
+            setStatus("success");            
+            setUser(null); // Setează contextul pe null
+            localStorage.removeItem("user");
+             sessionStorage.removeItem("user");
+           localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
+        window.location.href = "/login";
         } catch (error) {
             setMessage(error.response?.data?.message || "An error occurred.");
             setStatus("fail");
