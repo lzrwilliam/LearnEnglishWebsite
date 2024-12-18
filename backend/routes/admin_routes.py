@@ -80,26 +80,3 @@ def unban_user():
     return {"message": f"User {user.username} has been unbanned.", "status": "success"}, 200
 
 
-@admin_bp.route('/update_role', methods=['POST'])
-@token_required
-@role_required(["admin"])
-def update_role():
-    data = request.json
-    user_id = data.get("user_id")
-    new_role = data.get("new_role")
-
-    if not user_id or not new_role:
-        return {"message": "User ID și rolul nou sunt necesare.", "status": "fail"}, 400
-
-    valid_roles = ["user", "reviewer", "admin"]
-    if new_role.lower() not in valid_roles:
-        return {"message": "Rol invalid.", "status": "fail"}, 400
-
-    user = User.query.get(user_id)
-    if not user:
-        return {"message": "Userul nu a fost găsit.", "status": "fail"}, 404
-
-    user.role = new_role.lower()
-    db.session.commit()
-
-    return {"message": f"Rolul utilizatorului {user.username} a fost actualizat la {new_role}.", "status": "success"}, 200
