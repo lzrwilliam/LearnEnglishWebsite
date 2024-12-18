@@ -102,42 +102,9 @@ def get_profile_picture(user_id):
 
     return send_from_directory(app.config['UPLOAD_FOLDER'], user.profile_picture)
 
-@app.route('/api/user_requests/<int:user_id>', methods=['GET'])
-def get_user_requests(user_id):
-    requests = ReviewerRequest.query.filter_by(user_id=user_id).order_by(ReviewerRequest.created_at.desc()).all()
-    return {
-        "requests": [
-            {
-                "id": req.id,
-                "exercise_id": req.exercise_id,
-                "message": req.message,
-                "status": req.status,
-                "created_at": req.created_at
-            }
-            for req in requests
-        ]
-    }, 200
 
 
 
-
-
-@app.route('/api/user_requests', methods=['GET'])
-def check_active_request():
-    user_id = request.args.get('user_id', type=int)
-    exercise_id = request.args.get('exercise_id', type=int)
-
-    if not user_id or not exercise_id:
-        return {"hasActiveRequest": False}, 400
-
-    # Verificam daca exista o cerere activa pt exercitiul curent și user-ul curent
-    active_request = ReviewerRequest.query.filter_by(
-        user_id=user_id,
-        exercise_id=exercise_id,
-        status="pending"  # doar cele in asteptare sunt considerate active
-    ).first()
-
-    return {"hasActiveRequest": bool(active_request)}, 200
 
 
 

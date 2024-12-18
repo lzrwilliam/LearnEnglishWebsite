@@ -90,7 +90,7 @@ function Questions({updateXp}) {
         const question = questions[currentQuestion];
 
         if (responses[currentQuestion]?.submitted) {
-            setFeedback("Ai răspuns deja la această întrebare.");
+            setFeedback("You already submited an answer to this exercise!.");
             return;
         }
         let formattedAnswer = answer;
@@ -234,7 +234,7 @@ function Questions({updateXp}) {
 
         if (question.type === "multiple_choice" || question.type === "fill_blank") {
             if (!Array.isArray(question.options)) {
-                return <p>Eroare: Opțiunile nu sunt disponibile pentru această întrebare.</p>;
+                return <p>Error: Options not available for this exercise.</p>;
             }
             return (
                 <ul className="options">
@@ -261,7 +261,7 @@ function Questions({updateXp}) {
         }
 
         if (question.type === "rearrange") {
-            // Inițializăm cuvintele disponibile doar o singură dată
+            // Initializam cuvintele disponibile doar o singură dată
             if (availableWords.length === 0 && dragItems.length === 0) {
                 const shuffledWords = shuffleArray(question.correct_answer.split(" "));
                 setAvailableWords(shuffledWords);
@@ -356,7 +356,7 @@ function Questions({updateXp}) {
             const exerciseId = questions[currentQuestion]?.id;
 
             if (!exerciseId) {
-                alert("Exercițiul nu este disponibil.");
+                alert("Exercise unavailable.");
                 return;
             }
 
@@ -394,7 +394,7 @@ function Questions({updateXp}) {
             <h2>Report</h2>
             <textarea
                 className="suggestion-textarea"
-                placeholder="Scrie un mesaj pentru reviewer..."
+                placeholder="Write a message for the reviewer!"
                 value={reportMessage}
                 onChange={(e) => setReportMessage(e.target.value)}
             />

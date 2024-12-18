@@ -62,15 +62,35 @@ def create_reviewer_request():
     message = data.get('message')
 
     if not user_id or not exercise_id or not message:
-        return {"message": "Toate câmpurile sunt necesare!", "status": "fail"}, 400
+        return {"message": "All fields required!", "status": "fail"}, 400
 
    
     existing_request = ReviewerRequest.query.filter_by(user_id=user_id, exercise_id=exercise_id, status="pending").first()
     if existing_request:
-        return {"message": "Există deja o solicitare activă pentru acest exercițiu.", "status": "fail"}, 400
+        return {"message": "There is already an active request for this exercise!.", "status": "fail"}, 400
 
     new_request = ReviewerRequest(user_id=user_id, exercise_id=exercise_id, message=message)
     db.session.add(new_request)
     db.session.commit()
 
-    return {"message": "Solicitarea a fost trimisă cu succes.", "status": "success"}, 201
+    return {"message": "Request has been sent succesfully!.", "status": "success"}, 201
+
+
+
+@user_bp.route('/api/user_requests', methods=['GET'])
+def check_active_request():
+    user_id = request.args.get('user_id', type=int)
+    exercise_id = request.args.get('exercise_id', type=int)
+
+    if not user_id or not exercise_id:
+        return {"hasActiveRequest": False}, 400
+
+    # Verificam daca exista o cerere activa pt exercitiul curent și user-ul curent
+    active_request = ReviewerRequest.query.filter_by(
+        user_id=user_id,
+        exercise_id=exercise_id,
+        status="pending"  # doar cele in asteptare sunt considerate active
+    ).first()
+
+    return {"hasActiveRequest": bool(active_request)}, 200
+
