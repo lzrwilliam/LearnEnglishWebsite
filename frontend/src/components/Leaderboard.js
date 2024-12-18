@@ -1,6 +1,7 @@
 import api from "../api";
 import { AuthContext } from "../App";
 import React, { useState, useEffect, useContext } from "react";
+import ProfilePicture from "./ProfilePicture";
 
 function Leaderboard() {
     const { user } = useContext(AuthContext);
@@ -11,7 +12,6 @@ function Leaderboard() {
             const response = await api.get(`/leaderboard?user_id=${user.id}`);
 
             setUsers(response.data.leaderboard);
-
         } catch (error) {
             console.error("Error fetching leaderboard:", error);
         }
@@ -21,7 +21,7 @@ function Leaderboard() {
 
         fetchUsers();
 
-    }, [users]);
+    }, []);
 
     const handleBan = async (user_id) => {
         try {
@@ -73,7 +73,7 @@ function Leaderboard() {
                         <td style={{ width: "100%" }}>
                             <div className="user">
                                 {u.is_banned ? <div className="banned">Banned</div> : <div className="level">Level {Math.floor(u.xp / 100)}</div>}
-                                <div className="pfp"/>
+                                <ProfilePicture user_id={u.id}/>
                                 <div className="name">{u.username}</div>
                                 <div className="email">({u.xp})</div>
                             </div>

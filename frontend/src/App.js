@@ -1,19 +1,18 @@
 import React, { useState, createContext, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, Navigate } from "react-router-dom";
+import api from "./api"; 
+
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Leaderboard from "./components/Leaderboard";
 import Questions from "./components/Questions";
 import Requests from "./components/Requests";
 import Notifications from "./components/Notifications";
-
-
-import api from "./api"; 
-
-import ReviewerPendingRequests from "./components/ReviewerPendingRequests";
-
-import ProtectedRoute from "./components/ProtectedRoute"; // Importăm ruta protejată
+import Profile from "./components/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Reviewer from "./components/Reviewer";
+import ProfilePicture from "./components/ProfilePicture";
+import ReviewerPendingRequests from "./components/ReviewerPendingRequests";
 
 export const AuthContext = createContext();
 
@@ -81,7 +80,7 @@ function App() {
                 {user && (
                     <div className="menu">
                         <div className="menu-top">
-                            <div className="pfp"></div>
+                            <ProfilePicture user_id={user.id}/>
                             <p className="username">{user.role === "admin" ? "💎" : (user.role === "reviewer" ? "👀" : "")} {user.username}</p>
                         </div>
                         <div className="menu-middle">
@@ -106,6 +105,8 @@ function App() {
                                 <div>&nbsp;Notifications</div>
                             </Link>
 
+                            <Link to="/profile" className="nav-link">⚙️ Profile</Link>
+
                             {user.role === "admin" && (<Link to="/admin/requests" className="nav-link">✉️ Requests</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/requests" className="nav-link">✉️ Requests</Link>)}
@@ -124,6 +125,7 @@ function App() {
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
                         <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
                         <Route path="/leaderboards" element={<ProtectedRoute><Leaderboard/></ProtectedRoute>} />
+                        <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
 
                         {/* probabil ca putem sa facem mai bine aici */}
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<Requests/>} />)}

@@ -74,3 +74,4 @@ venv/
 *.db
 
 backend/config.json
+backend/pictures/*

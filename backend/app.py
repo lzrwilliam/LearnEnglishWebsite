@@ -215,14 +215,18 @@ def upload_profile_picture(user_id):
 
     return {"message": "File not allowed.", "status": "fail"}, 400
 
-
-
-
 @app.route('/pictures/<filename>', methods=['GET'])
 def serve_profile_picture(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
    
+@app.route('/api/pfp/<int:user_id>', methods=['GET'])
+def get_profile_picture(user_id):
+    user = User.query.get(user_id)
 
+    if not user or not user.profile_picture:
+        return "", 404
+
+    return send_from_directory(app.config['UPLOAD_FOLDER'], user.profile_picture)
 
 @app.route('/api/user_requests/<int:user_id>', methods=['GET'])
 def get_user_requests(user_id):
