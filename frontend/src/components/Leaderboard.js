@@ -32,7 +32,7 @@ function Leaderboard() {
             }
         }
         catch (error) {
-            console.log("Eroare la banarea utilizatorului:", error);
+            console.log("Error banning user:", error);
         }
     };
 

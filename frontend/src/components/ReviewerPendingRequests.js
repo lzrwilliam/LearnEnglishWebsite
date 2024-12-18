@@ -88,7 +88,7 @@ function ReviewerPendingRequests() {
                 return (
                     <>
                         <label>
-                            Opțiuni (separate prin virgulă):
+                            Options (separated by commas):
                             <input
                                 type="text"
                                 value={exercise.options?.join(",") || ""}
@@ -101,7 +101,7 @@ function ReviewerPendingRequests() {
                             />
                         </label>
                         <label>
-                            Opțiunea corectă (index începe cu 0):
+                           Correct option (index begin with 0):
                             <input
                                 type="number"
                                 value={exercise.correct_option || ""}
@@ -118,7 +118,7 @@ function ReviewerPendingRequests() {
             case "rearrange":
                 return (
                     <label>
-                        Răspuns corect:
+                       Correct answer:
                         <input
                             type="text"
                             value={exercise.correct_answer || ""}
@@ -147,8 +147,8 @@ function ReviewerPendingRequests() {
             <div className="requests-list">
                 {requests.map((request) => (
                     <div key={request.id} className="request-card">
-                        <p><b>Exercițiul ID:</b> {request.exercise_id}</p>
-                        <p><b>Mesaj utilizator:</b> {request.message}</p>
+                        <p><b>Exercise ID:</b> {request.exercise_id}</p>
+                        <p><b>User message:</b> {request.message}</p>
                         <div className="request-buttons">
                             <button
                                 className="accent-btn"
@@ -162,32 +162,32 @@ function ReviewerPendingRequests() {
                                     }
                                 }}
                             >
-                                {selectedRequest?.id === request.id ? "Ascunde Detalii" : "Detalii"}
+                                {selectedRequest?.id === request.id ? "Hide Details" : "Details"}
                             </button>
                             <button
                                 className="accent-btn reject-btn"
                                 onClick={() => handleReject(request)}
                             >
-                                Respinge
+                                Reject
                             </button>
                         </div>
 
                         {selectedRequest?.id === request.id && exerciseDetails && (
                             <div className="exercise-details">
-                                <h3>Detalii Exercițiu</h3>
-                                <p><b>Întrebare:</b> {exerciseDetails.question}</p>
-                                <p><b>Răspuns corect:</b> {exerciseDetails.correct_answer || exerciseDetails.options?.[exerciseDetails.correct_option]}</p>
+                                <h3>Exercise details</h3>
+                                <p><b>Question:</b> {exerciseDetails.question}</p>
+                                <p><b>Correct answer:</b> {exerciseDetails.correct_answer || exerciseDetails.options?.[exerciseDetails.correct_option]}</p>
                                 <button
                                     className="accent-btn"
                                     onClick={() => setEditingExercise(exerciseDetails)}
                                 >
-                                    Editare
+                                    Edit
                                 </button>
 
                                 {/* Formularul de editare apare aici */}
                                 {editingExercise?.id === exerciseDetails.id && (
                     <div className="edit-form">
-                        <h3>Editare Exercițiu</h3>
+                        <h3>Edit exercise</h3>
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
@@ -195,7 +195,7 @@ function ReviewerPendingRequests() {
                             }}
                         >
                             <label>
-                                Întrebare:
+                               Question:
                                 <input
                                     type="text"
                                     value={editingExercise.question || ""}
@@ -208,7 +208,7 @@ function ReviewerPendingRequests() {
                                 />
                             </label>
                             <label>
-                                Dificultate:
+                                Difficulty:
                                 <select
                                     value={editingExercise.difficulty || "easy"}
                                     onChange={(e) =>
@@ -218,9 +218,9 @@ function ReviewerPendingRequests() {
                                         })
                                     }
                                 >
-                                    <option value="easy">Ușor</option>
-                                    <option value="medium">Mediu</option>
-                                    <option value="hard">Greu</option>
+                                    <option value="easy">Easy</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="hard">Hard</option>
                                 </select>
                             </label>
                             {renderTypeSpecificFields(editingExercise, setEditingExercise)}

@@ -12,7 +12,7 @@ function UserNotifications() {
             const response = await api.get(`/notifications/${user.id}`);
             setNotifications(response.data.notifications);
         } catch (error) {
-            setMessage("Eroare la încărcarea notificărilor.");
+            setMessage("Error loading notifications!.");
         }
     };
 
@@ -46,9 +46,9 @@ function UserNotifications() {
 
     return (
         <div>
-            <h2>🔔 Notificări</h2>
+            <h2>🔔 Notifications</h2>
             {message && <p className="error-message">{message}</p>}
-            {notifications.length === 0 && <p>Nu ai notificări disponibile.</p>}
+            {notifications.length === 0 && <p>No available notifications.</p>}
             <ul className="notifications-list">
                 {notifications.map((notif) => (
                     <li

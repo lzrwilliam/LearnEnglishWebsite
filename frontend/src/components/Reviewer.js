@@ -32,7 +32,7 @@ function Reviewer() {
     }, []);
 
     const handleDelete = async (exerciseId) => {
-        const confirmDelete = window.confirm("Ești sigur că vrei să ștergi acest exercițiu?");
+        const confirmDelete = window.confirm("Are you sure you want to delete this exercise?");
 
         if (!confirmDelete) 
             return;
@@ -110,7 +110,7 @@ function Reviewer() {
         case "multiple_choice":
             return (
             <>
-                <label>Opțiuni (separate prin virgulă):</label>
+                <label>Options (separateed by commas):</label>
                 <input type="text" value={exercise.options?.join(",") || ""} required
                 onChange={(e) =>
                     setExercise({
@@ -119,7 +119,7 @@ function Reviewer() {
                     })
                     } />
                 
-                <label>Opțiunea corectă (index incepe cu 0):</label>
+                <label>Correct option (index begin with 0):</label>
                 <input type="number" min="0" value={exercise.correct_option} required
                     onChange={(e) =>
                         setExercise({
@@ -132,7 +132,7 @@ function Reviewer() {
         case "rearrange":
             return (
                 <>
-                    <label>Răspuns corect:</label>
+                    <label>Correct answer:</label>
                     <input type="text" value={exercise.correct_answer || ""} required
                         onChange={(e) =>
                             setExercise({
@@ -157,7 +157,7 @@ function Reviewer() {
             {showForm && (
                 <div className="overlay" onMouseDown={() => setShowForm(false)}>
                     <div className="form-container" onMouseDown={(e) => e.stopPropagation()}>
-                        <h2>Adaugă un exercițiu</h2>
+                        <h2>Add an exercise</h2>
                         <form onSubmit={(e) => {e.preventDefault(); handleAddExercise();}}>
 
                             <label>Întrebare:</label>  
@@ -166,24 +166,24 @@ function Reviewer() {
                                     setNewExercise({ ...newExercise, question: e.target.value })
                                 } />
                             
-                            <label>Dificultate:</label>
+                            <label>Dificulty:</label>
                             <select value={newExercise.difficulty}
                                 onChange={(e) =>
                                     setNewExercise({ ...newExercise, difficulty: e.target.value })
                                 } >
-                                <option value="easy">Ușor</option>
-                                <option value="medium">Mediu</option>
-                                <option value="hard">Greu</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
                             </select>
                             
-                            <label>Tip Exercițiu:</label>
+                            <label>Exercise type:</label>
                             <select value={newExercise.type}
                                 onChange={(e) =>
                                     setNewExercise({ ...newExercise, type: e.target.value })
                                 }>
-                                <option value="fill_blank">Completare spațiu</option>
-                                <option value="multiple_choice">Alegere multiplă</option>
-                                <option value="rearrange">Rearanjare</option>
+                                <option value="fill_blank">Fill in the blank</option>
+                                <option value="multiple_choice">Multiple choice</option>
+                                <option value="rearrange">Rearrange</option>
                             </select>
                             
                             {renderTypeSpecificFields(newExercise, setNewExercise)}
@@ -217,10 +217,10 @@ function Reviewer() {
             {editingExercise && (
                 <div className="overlay" onMouseDown={() => setEditingExercise(null)}>
                     <div className="form-container" onMouseDown={(e) => e.stopPropagation()}>
-                        <h2>Editare exercițiu</h2>
+                        <h2>Edit exercise</h2>
                         <form onSubmit={(e) => {e.preventDefault(); handleEditExercise();}}>
 
-                            <label>Întrebare:</label>
+                            <label>Question:</label>
                             <input type="text" value={editingExercise.question || ""} required
                                 onChange={(e) =>
                                     setEditingExercise({
@@ -229,7 +229,7 @@ function Reviewer() {
                                     })
                                 } />
                                 
-                            <label>Dificultate:</label>
+                            <label>Dificulty:</label>
                             <select value={editingExercise.difficulty || "easy"}
                                 onChange={(e) =>
                                     setEditingExercise({
@@ -237,12 +237,12 @@ function Reviewer() {
                                         difficulty: e.target.value,
                                     })
                                 } >
-                                <option value="easy">Ușor</option>
-                                <option value="medium">Mediu</option>
-                                <option value="hard">Greu</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
                             </select>
                             
-                            <label>Tip Exercițiu:</label>
+                            <label>Exercise type:</label>
                             <select value={editingExercise.type || "fill_blank"} 
                                 onChange={(e) =>
                                     setEditingExercise({
@@ -250,14 +250,14 @@ function Reviewer() {
                                         type: e.target.value,
                                     })
                                 }>
-                                <option value="fill_blank">Completare spațiu</option>
-                                <option value="multiple_choice">Alegere multiplă</option>
-                                <option value="rearrange">Rearanjare</option>
+                                <option value="fill_blank">Fill in the blank</option>
+                                <option value="multiple_choice">Multiple choice</option>
+                                <option value="rearrange">Rearrange</option>
                             </select>
                             
                             {renderTypeSpecificFields(editingExercise, setEditingExercise)}
 
-                            <button type="submit" className="accent-btn">Salvează</button>
+                            <button type="submit" className="accent-btn">Save</button>
                         </form>
                     </div>
                 </div>
