@@ -93,5 +93,5 @@ def check_role_request_status():
             "role_requested": existing_request.role_requested
         }), 200
     else:
-        return jsonify({"has_request": False}), 200
+         return jsonify({"status": "success", "has_request": False}), 200
 

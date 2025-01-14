@@ -50,20 +50,20 @@ def role_required(required_roles):
         def decorated(*args, **kwargs):
             token = request.headers.get("Authorization")
             if not token:
-                return jsonify({"message": "Token is missing!"}), 403
+                return jsonify({"message": "Token is missing!","status":"fail"}), 403
             try:
                 decoded = jwt.decode(token.split()[1], Config.SECRET_KEY, algorithms=["HS256"])
                 user_id = decoded['user_id']
                 user = User.query.get(user_id)
                 if not user:
-                    return jsonify({"message": "User not found!"}), 403
+                    return jsonify({"message": "User not found!","status": "fail"}), 403
                 if user.role.lower() not in [r.lower() for r in required_roles]:
-                    return jsonify({"message": "Access denied! Insufficient permissions."}), 403
+                    return jsonify({"message": "Access denied! Insufficient permissions.","status": "fail"}), 403
                 request.user = user  
             except jwt.ExpiredSignatureError:
-                return jsonify({"message": "Token expired!"}), 403
+                return jsonify({"message": "Token expired!","status": "fail"}), 403
             except jwt.InvalidTokenError:
-                return jsonify({"message": "Invalid token!"}), 403
+                return jsonify({"message": "Invalid token!","status": "fail"}), 403
             return f(*args, **kwargs)
         return decorated
     return decorator

@@ -79,12 +79,15 @@ def unban_user():
 
     return {"message": f"User {user.username} has been unbanned.", "status": "success"}, 200
 
-
 @admin_bp.route('/role_requests', methods=['GET'])
 @token_required
+@role_required(['admin'])
 def get_role_requests():
     role_requests = RoleRequest.query.filter_by(status="pending").all()
-    return jsonify({"requests": [r.to_dict() for r in role_requests]}), 200
+    if not role_requests:
+        return jsonify({"status": "success", "requests": [], "message": "No role requests found"}), 200
+    return jsonify({"status": "success", "requests": [r.to_dict() for r in role_requests]}), 200
+
 
 
 @admin_bp.route('/role_requests/<int:request_id>', methods=['PUT'])
