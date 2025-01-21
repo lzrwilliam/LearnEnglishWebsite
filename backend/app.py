@@ -286,6 +286,8 @@ def submit_answer():
 if __name__ == '__main__':
     try:
         with app.app_context():
+         if not app.config['TESTING']:
+
 
             db.session.execute(text('SELECT 1'))
             print("Conexiunea la PostgreSQL funcționează!")
