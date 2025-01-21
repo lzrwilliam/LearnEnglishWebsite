@@ -192,41 +192,36 @@ def register():
     }), 201
 
 
-
-
-
 @app.route('/api/questions', methods=['POST'])
 def get_questions():
-    # data = request.json
-    # user_id = data.get('user_id')
-    # session_questions = data.get('session_questions', [])
+    data = request.json
+    user_id = data.get('user_id')
+    session_questions = data.get('session_questions', [])
 
-    # if not user_id:
-    #     return {"message": "User ID is required.", "status": "fail"}, 400
+    if not user_id:
+        return {"message": "User ID is required.", "status": "fail"}, 400
 
-    # user = User.query.get(user_id)
+    user = User.query.get(user_id)
     
-    # if not user:
-    #     return {"message": "User not found.", "status": "fail"}, 404
+    if not user:
+        return {"message": "User not found.", "status": "fail"}, 404
 
-    # answered_questions = db.session.query(UserQuestionProgress.question_id).filter_by(user_id=user_id).all()
-    # answered_question_ids = [q[0] for q in answered_questions]
+    answered_questions = db.session.query(UserQuestionProgress.question_id).filter_by(user_id=user_id).all()
+    answered_question_ids = [q[0] for q in answered_questions]
 
-    # questions = Exercise.query.filter(
-    #     Exercise.difficulty == user.difficulty,
-    #     ~Exercise.id.in_(session_questions + answered_question_ids)
-    # ).order_by(Exercise.random_order).limit(5).all()
+    questions = Exercise.query.filter(
+        Exercise.difficulty == user.difficulty,
+        ~Exercise.id.in_(session_questions + answered_question_ids)
+    ).order_by(Exercise.random_order).limit(5).all()
 
-    # if not questions:
-    #     return {"message": f"No more questions available for difficulty {user.difficulty}.", "status": "fail"}, 404
+    if not questions:
+        return {"message": f"No more questions available for difficulty {user.difficulty}.", "status": "fail"}, 404
 
-    # return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
+    return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
 
     questions = Exercise.query.all()
 
     return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
-
-
 
 
 @app.route('/api/answer', methods=['POST'])

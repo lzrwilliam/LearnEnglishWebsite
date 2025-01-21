@@ -83,7 +83,7 @@ function Questions({updateXp}) {
         if (questions.length > 0) {
             checkActiveRequest();
         }
-    }, [currentQuestion, questions]);
+    });
 
 
     const submitAnswer = async () => {
@@ -206,7 +206,7 @@ function Questions({updateXp}) {
                 const status = responses[index]?.correct; // Fetch the correctness for this question
                 var className = "indicator";
     
-                if (index == currentQuestion)
+                if (index === currentQuestion)
                     className += " current";
 
                 if (status === true)

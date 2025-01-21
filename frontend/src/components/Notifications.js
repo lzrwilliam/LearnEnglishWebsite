@@ -42,7 +42,7 @@ function UserNotifications() {
 
     useEffect(() => {
         fetchNotifications();
-    }, []);
+    });
 
     return (
         <div>

@@ -21,7 +21,7 @@ function Leaderboard() {
 
         fetchUsers();
 
-    }, []);
+    });
 
     const handleBan = async (user_id) => {
         try {

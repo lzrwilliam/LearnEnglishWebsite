@@ -10,9 +10,7 @@ function Profile() {
     const [status, setStatus] = useState("");
     const [roleRequestStatus, setRoleRequestStatus] = useState({ has_request: false, role_requested: null });
 
-
-
-       const fetchUpdatedUser = async () => {
+    const fetchUpdatedUser = async () => {
         try {
             const response = await api.get(`/user/${user.id}`); 
             setUser(response.data.user);
@@ -22,22 +20,19 @@ function Profile() {
         }
     };
 
+    const fetchRoleRequestStatus = async () => {
+        try {
+            const response = await api.get("/profile/role_request_status");
+            setRoleRequestStatus(response.data);
+        } catch (error) {
+            console.error("Error checking role request status:", error);
+        }
+    };
+
     useEffect(() => {
         fetchUpdatedUser();
-    }, []);
-
-    const fetchRoleRequestStatus = async () => {
-      try {
-          const response = await api.get("/profile/role_request_status");
-          setRoleRequestStatus(response.data);
-      } catch (error) {
-          console.error("Error checking role request status:", error);
-      }
-  };
-
-  useEffect(() => {
-      fetchRoleRequestStatus();
-  }, []);
+        fetchRoleRequestStatus();
+    });
 
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
@@ -57,7 +52,7 @@ function Profile() {
         formData.append("file", file);
     
         try {
-          const response = await api.post(
+          await api.post(
             `/upload_profile_picture/${user.id}`,
             formData,
             {
@@ -145,7 +140,7 @@ function Profile() {
                 <button type="submit" className="accent-btn fit-content">Upload</button>
             </form>
             {message && (
-        <div className={`alert ${status === "fail" ? "alert-danger" : "alert-success"}` + " error"}>
+        <div className={`error alert ${status === "fail" ? "alert-danger" : "alert-success"}`}>
           {message}
         </div>
       )}

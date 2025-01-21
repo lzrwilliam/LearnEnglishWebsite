@@ -6,7 +6,6 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Leaderboard from "./components/Leaderboard";
 import Questions from "./components/Questions";
-import Requests from "./components/Requests";
 import Notifications from "./components/Notifications";
 import Profile from "./components/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
