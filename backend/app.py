@@ -49,6 +49,7 @@ def allowed_file(filename):
 
 
 
+
 #blueprints trebuie inregistrate
 app.register_blueprint(admin_bp)
 app.register_blueprint(reviewer_bp)
@@ -136,7 +137,6 @@ def get_leaderboard():
     return {"leaderboard": leaderboard}, 200
 
 
-
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
@@ -151,13 +151,21 @@ def login():
     if user.is_banned:
         return {"message": f"Your account has been banned.", "status": "banned"}, 403
 
-    token = generate_token(user.id)  # Generăm token-ul JWT
-    return jsonify({  # Asigură-te că folosești jsonify pentru răspuns
+    today = date.today()
+    if user.last_login_date is None or user.last_login_date != today:
+        user.active_days += 1
+        user.last_login_date = today
+
+    db.session.commit()
+
+    token = generate_token(user.id)
+    return jsonify({
         "message": "Login successful.",
         "status": "success",
         "user": user.to_dict(),
         "token": token
     }), 200
+
 
 
 @app.route('/api/register', methods=['POST'])
@@ -234,37 +242,30 @@ def submit_answer():
         return {"message": "All fields required!", "status": "fail"}, 400
 
     question = Exercise.query.get(question_id)
+    user = db.session.get(User, user_id)
 
-    if not question:
-        return {"message": "Question does not exist.", "status": "fail"}, 404
-
-    user = User.query.get(user_id)
-
-    if not user:
-        return {"message": "User not found.", "status": "fail"}, 404
+    if not question or not user:
+        return {"message": "Invalid user or question.", "status": "fail"}, 404
 
     correct = False
     xp = 0
 
+    # Determinăm dacă răspunsul este corect
     if question.type in ['multiple_choice', 'fill_blank']:
         try:
             answer_index = int(answer)
             correct = question.correct_option == answer_index
         except ValueError:
             correct = False
-
-        if correct:
-            xp = 10 if question.difficulty == 'easy' else 20 if question.difficulty == 'medium' else 30
-
     elif question.type == 'rearrange':
         correct = question.correct_answer and question.correct_answer.lower().strip() == answer.lower().strip()
 
-        if correct:
-            xp = 20 if question.difficulty == 'easy' else 30 if question.difficulty == 'medium' else 40
-
+    # Actualizare XP și progres
     if correct:
+        xp = 10 if question.difficulty == 'easy' else 20 if question.difficulty == 'medium' else 30
         user.xp += xp
         user.correct_streak += 1
+
         if user.last_active_date is None or user.last_active_date != date.today():
             user.daily_correct_answers = 0
             user.last_active_date = date.today()
@@ -275,11 +276,12 @@ def submit_answer():
 
     db.session.commit()
 
+    # Salvăm progresul întrebărilor
     progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=correct)
     db.session.add(progress)
 
     try:
-        # Ensure achievements are initialized for the user
+        # 🚀 1. Inițializăm realizările lipsă pentru utilizator
         achievements = Achievement.query.all()
         for achievement in achievements:
             existing_ua = UserAchievement.query.filter_by(user_id=user_id, achievement_id=achievement.id).first()
@@ -288,7 +290,7 @@ def submit_answer():
                 db.session.add(new_ua)
         db.session.commit()
 
-        # Update user achievements
+        # 🚀 2. Actualizăm progresul realizărilor
         user_achievements = UserAchievement.query.filter_by(user_id=user_id, completed=False).all()
         for ua in user_achievements:
             achievement = Achievement.query.get(ua.achievement_id)
@@ -299,21 +301,31 @@ def submit_answer():
                 ua.progress = user.correct_streak
             elif achievement.type == "daily_correct_answers":
                 ua.progress = user.daily_correct_answers
+            elif achievement.type == "streak_days":
+                ua.progress = user.active_days  # Contorizează zilele active
+            elif achievement.type == "correct_answers_difficulty_easy" and question.difficulty == "easy":
+                ua.progress += 1 if correct else 0
+            elif achievement.type == "correct_answers_difficulty_medium" and question.difficulty == "medium":
+                ua.progress += 1 if correct else 0
+            elif achievement.type == "correct_answers_difficulty_hard" and question.difficulty == "hard":
+                ua.progress += 1 if correct else 0
+            elif achievement.type == "days_active":
+                ua.progress = user.active_days  # Actualizează numărul de zile active
 
+            # 🚀 3. Verificăm dacă achievement-ul este complet
             if ua.progress >= achievement.goal and not ua.completed:
                 ua.completed = True
                 user.xp += achievement.xp_reward
 
-                # Verificăm dacă notificarea există deja pentru această realizare
                 existing_notification = Notification.query.filter_by(
                     user_id=user.id,
-                    message=f"Felicitări! Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
+                    message=f"🎉 Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
                 ).first()
 
                 if not existing_notification:
                     new_notification = Notification(
                         user_id=user.id,
-                        message=f"Felicitări! Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
+                        message=f"🎉 Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
                     )
                     db.session.add(new_notification)
 
@@ -326,6 +338,11 @@ def submit_answer():
         return {"message": f"An error occurred: {str(e)}", "status": "fail"}, 500
 
     return {"message": "Answer processed.", "correct": correct, "user_xp": user.xp, "status": "success"}, 200
+
+    
+    
+    
+
 
 if __name__ == '__main__':
     try:

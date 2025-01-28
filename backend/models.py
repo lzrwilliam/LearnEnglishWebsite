@@ -21,7 +21,9 @@ class User(db.Model):
     profile_picture = db.Column(db.String(255), nullable=True)
     correct_streak = db.Column(db.Integer, default=0)  # Seria curenta de raspunsuri corecte
     daily_correct_answers = db.Column(db.Integer, default=0)  # Raspunsuri corecte azi
-    last_active_date = db.Column(db.Date, nullable=True)  # Ultima data activa 
+    last_active_date = db.Column(db.Date, nullable=True)  # Data ultimei activități
+    active_days = db.Column(db.Integer, default=0)  # Numarul de zile active unice
+    last_login_date = db.Column(db.Date, nullable=True)  # Ultima zi in care s-a logat
    
 
 
@@ -38,7 +40,9 @@ class User(db.Model):
             "profile_picture": f"/pictures/{self.profile_picture}" if self.profile_picture else None,
             "correct_streak": self.correct_streak,
             "daily_correct_answers": self.daily_correct_answers,
-            "last_active_date": self.last_active_date
+            "last_active_date": self.last_active_date,
+            "active_days": self.active_days,
+            "last_login_date": self.last_login_date
 
         }
 
@@ -170,6 +174,7 @@ class Achievement(db.Model):
     xp_reward = db.Column(db.Integer, default=0)
     goal = db.Column(db.Integer, nullable=False)  # Exemplu: 10 răspunsuri corecte
     type = db.Column(db.String(50), nullable=False)  # Tipul realizării
+    icon = db.Column(db.String(255), nullable=True)
 
     def to_dict(self):
         return {
@@ -178,7 +183,8 @@ class Achievement(db.Model):
             "description": self.description,
             "xp_reward": self.xp_reward,
             "goal": self.goal,
-            "type": self.type
+            "type": self.type,
+            "icon": self.icon
         }
 
 class UserAchievement(db.Model):
