@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta,date
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -223,7 +223,6 @@ def get_questions():
 
     return {"questions": [q.to_dict() for q in questions], "status": "success"}, 200
 
-
 @app.route('/api/answer', methods=['POST'])
 def submit_answer():
     data = request.json
@@ -232,18 +231,12 @@ def submit_answer():
     answer = data.get('answer')
 
     if not all([user_id, question_id, answer]):
-        return {"message": "All field required!", "status": "fail"}, 400
+        return {"message": "All fields required!", "status": "fail"}, 400
 
     question = Exercise.query.get(question_id)
 
     if not question:
         return {"message": "Question does not exist.", "status": "fail"}, 404
-
-    # Verificăm dacă întrebarea a fost deja răspunsă
-    # progress = UserQuestionProgress.query.filter_by(user_id=user_id, question_id=question_id).first()
-
-    # if progress:
-    #     return {"message": "Întrebarea a fost deja răspunsă.", "status": "fail"}, 400
 
     user = User.query.get(user_id)
 
@@ -271,17 +264,68 @@ def submit_answer():
 
     if correct:
         user.xp += xp
-        db.session.commit()
+        user.correct_streak += 1
+        if user.last_active_date is None or user.last_active_date != date.today():
+            user.daily_correct_answers = 0
+            user.last_active_date = date.today()
+
+        user.daily_correct_answers += 1
+    else:
+        user.correct_streak = 0
+
+    db.session.commit()
 
     progress = UserQuestionProgress(user_id=user_id, question_id=question_id, answered_correctly=correct)
     db.session.add(progress)
-    db.session.commit()
 
-    return {"message": "Answer sent.", "correct": correct, "user_xp": user.xp, "status": "success"}, 200
+    try:
+        # Ensure achievements are initialized for the user
+        achievements = Achievement.query.all()
+        for achievement in achievements:
+            existing_ua = UserAchievement.query.filter_by(user_id=user_id, achievement_id=achievement.id).first()
+            if not existing_ua:
+                new_ua = UserAchievement(user_id=user_id, achievement_id=achievement.id, progress=0, completed=False)
+                db.session.add(new_ua)
+        db.session.commit()
 
+        # Update user achievements
+        user_achievements = UserAchievement.query.filter_by(user_id=user_id, completed=False).all()
+        for ua in user_achievements:
+            achievement = Achievement.query.get(ua.achievement_id)
 
+            if achievement.type == "correct_answers_total":
+                ua.progress += 1 if correct else 0
+            elif achievement.type == "correct_answers_streak":
+                ua.progress = user.correct_streak
+            elif achievement.type == "daily_correct_answers":
+                ua.progress = user.daily_correct_answers
 
+            if ua.progress >= achievement.goal and not ua.completed:
+                ua.completed = True
+                user.xp += achievement.xp_reward
 
+                # Verificăm dacă notificarea există deja pentru această realizare
+                existing_notification = Notification.query.filter_by(
+                    user_id=user.id,
+                    message=f"Felicitări! Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
+                ).first()
+
+                if not existing_notification:
+                    new_notification = Notification(
+                        user_id=user.id,
+                        message=f"Felicitări! Ai finalizat realizarea '{achievement.name}' și ai câștigat {achievement.xp_reward} XP!"
+                    )
+                    db.session.add(new_notification)
+
+            db.session.add(ua)
+
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        return {"message": f"An error occurred: {str(e)}", "status": "fail"}, 500
+
+    return {"message": "Answer processed.", "correct": correct, "user_xp": user.xp, "status": "success"}, 200
 
 if __name__ == '__main__':
     try:

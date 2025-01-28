@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import db, Exercise, User,ReviewerRequest, Notification
+from models import db, Exercise, User,ReviewerRequest, Notification, Achievement, UserAchievement
 from auth import token_required, role_required
 
 user_bp = Blueprint('user', __name__)
@@ -103,3 +103,46 @@ def get_user(user_id):
         return jsonify({"message": "User not found.", "status": "fail"}), 404
     
     return jsonify({"user": user.to_dict(), "status": "success"}), 200
+
+
+@user_bp.route('/api/achievements', methods=['GET'])
+def get_all_achievements():
+    achievements = Achievement.query.all()
+    return jsonify([achievement.to_dict() for achievement in achievements]), 200
+
+@user_bp.route('/api/user_achievements/<int:user_id>', methods=['GET'])
+def get_user_achievements(user_id):
+    user_achievements = UserAchievement.query.filter_by(user_id=user_id).all()
+    return jsonify([ua.to_dict() for ua in user_achievements]), 200
+
+@user_bp.route('/api/user_achievements/update', methods=['POST'])
+def update_user_achievements():
+    data = request.json
+    user_id = data.get('user_id')
+    increment = data.get('increment', 0)
+
+    if not user_id or increment <= 0:
+        return {"message": "Invalid data.", "status": "fail"}, 400
+
+    user = User.query.get(user_id)
+    user_achievements = UserAchievement.query.filter_by(user_id=user_id, completed=False).all()
+
+    for ua in user_achievements:
+        achievement = Achievement.query.get(ua.achievement_id)
+
+        if achievement.type == "correct_answers_total":
+            ua.progress += increment
+        elif achievement.type == "correct_answers_streak":
+            ua.progress = user.correct_streak
+        elif achievement.type == "daily_correct_answers":
+            ua.progress = user.daily_correct_answers
+
+        if ua.progress >= achievement.goal:
+            ua.completed = True
+            user.xp += achievement.xp_reward
+            db.session.add(user)
+
+        db.session.add(ua)
+
+    db.session.commit()
+    return {"message": "Achievements updated.", "status": "success"}, 200
