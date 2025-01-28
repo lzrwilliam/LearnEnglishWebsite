@@ -13,6 +13,7 @@ import Reviewer from "./components/Reviewer";
 import ProfilePicture from "./components/ProfilePicture";
 import ReviewerPendingRequests from "./components/ReviewerPendingRequests";
 import AdminRequests from "./components/AdminRequests";
+import Achievements from "./components/Achievements";
 
 export const AuthContext = createContext();
 
@@ -113,6 +114,9 @@ function App() {
                             {user.role === "reviewer" && (<Link to="/reviewer/exercises" className="nav-link">📖 Review</Link>)}
                             {user.role === "reviewer" && (<Link to="/reviewer/requests" className="nav-link">✉️ Requests</Link>)}
 
+                            <Link to="/achievements" className="nav-link">🏆 Achievements</Link>
+
+
                             <Link onClick={logout}>↪ Sign out</Link>
                         </div>
                     </div>
@@ -128,6 +132,8 @@ function App() {
                         <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
                         <Route path="/leaderboards" element={<ProtectedRoute><Leaderboard/></ProtectedRoute>} />
                         <Route path="/profile" element={<ProtectedRoute><Profile/></ProtectedRoute>} />
+                        <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
+
 
                         {/* probabil ca putem sa facem mai bine aici */}
                         {user?.role === "admin"  &&(<Route path="/admin/requests" element= {<AdminRequests/>} />)}

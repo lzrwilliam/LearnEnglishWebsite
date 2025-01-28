@@ -170,7 +170,6 @@ class Achievement(db.Model):
     xp_reward = db.Column(db.Integer, default=0)
     goal = db.Column(db.Integer, nullable=False)  # Exemplu: 10 răspunsuri corecte
     type = db.Column(db.String(50), nullable=False)  # Tipul realizării
-    icon = db.Column(db.String(255), nullable=True)  # Imagine/icon pentru realizare
 
     def to_dict(self):
         return {
@@ -179,8 +178,7 @@ class Achievement(db.Model):
             "description": self.description,
             "xp_reward": self.xp_reward,
             "goal": self.goal,
-            "type": self.type,
-            "icon": self.icon,
+            "type": self.type
         }
 
 class UserAchievement(db.Model):
