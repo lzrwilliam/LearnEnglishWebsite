@@ -60,6 +60,8 @@ app.register_blueprint(profile_bp)
 
 
 
+
+
 @app.route('/api/upload_profile_picture/<int:user_id>', methods=['POST'])
 def upload_profile_picture(user_id):
     user = User.query.get(user_id)

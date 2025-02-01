@@ -39,7 +39,8 @@ const Achievements = () => {
                     {achievements.map(({ achievement, progress, completed }) => (
                         <div key={achievement.id} className={`achievement ${completed ? "completed" : ""}`}>
                             <div className="achievement-icon">
-                                <img src={`/pictures/icons/${achievement.icon}`} alt={achievement.name} />
+                            <img src={`http://localhost:5000/pictures/${achievement.icon}`} alt={achievement.name} />
+
                             </div>
                             <div className="achievement-details">
                                 <h3>{achievement.name}</h3>
