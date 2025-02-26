@@ -1,0 +1,5 @@
+{
+    "database": "postgresql://postgres:1234@localhost/duolingo_db",
+    "SECRET_KEY":"cheie",
+    "test_database": "postgresql://postgres:1234@localhost/duolingo_db_test"
+}
