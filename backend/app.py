@@ -345,20 +345,25 @@ def submit_answer():
     
     
 
+import os
+
+from urllib.parse import urlparse
+import os
 
 if __name__ == '__main__':
-    try:
-        with app.app_context():
-         if not app.config['TESTING']:
+    with app.app_context():
+        # Extrage calea bazei de date
+        db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+        db_path = db_uri.replace("sqlite:///", "")
+        
+        # Transformă în cale absolută relativ la directorul curent
+        db_path = os.path.abspath(db_path)
 
-
-            db.session.execute(text('SELECT 1'))
-            print("Conexiunea la PostgreSQL funcționează!")
-
+        if not os.path.exists(db_path):
+            print("🛠️  Baza de date nu există. Se creează tabelele...")
             db.create_all()
-            print("Tabelele au fost create!")
+            print("✅  Tabelele au fost create.")
+        else:
+            print("✅  Baza de date există deja.")
 
-            app.run(debug=True)
-
-    except Exception as e:
-        print("Eroare la conectarea cu baza de date:", e)
+    app.run(debug=True)

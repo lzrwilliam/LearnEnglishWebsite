@@ -1,5 +1,5 @@
 {
-    "database": "postgresql://postgres:1234@localhost/duolingo_db",
-    "SECRET_KEY":"cheie",
-    "test_database": "postgresql://postgres:1234@localhost/duolingo_db_test"
+  "database": "sqlite:///duolingo_db.sqlite3",
+  "SECRET_KEY": "cheie",
+  "test_database": "sqlite:///duolingo_db_test.sqlite3"
 }
