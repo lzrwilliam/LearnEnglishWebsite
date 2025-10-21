@@ -7,49 +7,130 @@
 
 ## 🚀 Overview
 
-This project provides an educational platform where users can:
-- Learn English through multiple types of exercises.
-- Earn XP and achievements as they progress.
-- Report incorrect exercises for review.
-- Apply for higher-level roles (reviewer / admin).
-- Manage content and user roles through admin panels.
+### 🧑‍🎓 User Features
+- Practice exercises with multiple types and difficulties  
+- Earn XP and unlock achievements  
+- Track progress and streaks  
+- Receive notifications for achievements, feedback, and system updates  
+- Request reviewers for submitted exercises
 
-User roles:
-- 👤 **User** – Solves exercises, tracks progress, submits feedback.
-- 🧩 **Reviewer** – Manages exercises (add, edit, delete).
-- 🛠️ **Admin** – Handles user role requests and moderation.
+### 🧑‍🏫 Reviewer Features
+- Manage and approve user exercise submissions  
+- Edit, update, or delete exercises  
+- Approve or reject reviewer requests  
+- Send notifications to users about review outcomes  
+
+### 🛡️ Admin Features
+- Manage all users (view, ban, unban, or delete)  
+- Approve or reject **role upgrade requests**  
+- View and manage reviewer and role requests  
+- Full access to the database and notifications  
 
 ---
 
-## 🧩 Key Features
+## 🧩 Tech Stack
 
-### 🧠 Interactive Learning
-- Exercises dynamically generated based on difficulty.
-- Three main question types:
-  - Multiple choice  
-  - Fill in the blank  
-  - Rearrange (drag & drop)
-- Instant feedback and XP system.
+| Layer | Technology |
+|-------|-------------|
+| **Frontend** | React.js (JavaScript, JSX, Hooks, Context API) |
+| **Backend** | Flask (Python), Flask-JWT-Extended, SQLAlchemy |
+| **Database** | SQLite (auto-created) |
+| **Auth** | JWT-based Authentication & Authorization |
+| **Styling** | CSS / Tailwind (if configured) |
+| **API Communication** | Axios / Fetch (JSON REST APIs) |
+| **Environment Config** | `config.json` + environment variables |
 
-### 🔁 Reports & Requests
-- Users can report incorrect exercises directly.
-- Requests are sent to reviewers for approval/rejection.
+---
 
-### 🧑‍🏫 Reviewer Panel
-- Full CRUD functionality for exercises.
-- Add, edit, or delete exercises with difficulty levels.
+## ⚙️ Installation & Setup
 
-### 🛡️ Admin Panel
-- Manage user role requests (promote or reject).
-- View pending requests in real time.
+### 🖥️ Backend Setup (Flask)
+```bash
+# Navigate to backend folder
+cd backend
+
+# (Optional) Create virtual environment
+python -m venv venv
+source venv/bin/activate  # on macOS/Linux
+venv\Scripts\activate     # on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the backend
+python app.py
+```
+
+By default, the app runs on http://127.0.0.1:5000/.
+
+### 💻 Frontend Setup (React)
+```bash
+# Navigate to frontend folder
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start frontend
+npm start
+```
+
+The React app will start on http://localhost:3000/.
+
+### 🗄️ Automatic Database Creation
+
+The backend automatically creates the database if it doesn’t exist, using this snippet in app.py:
+
+```python
+with app.app_context():
+    db.create_all()
+```
+This ensures that all tables (Users, Exercises, Notifications, Achievements, etc.) are initialized upon the first run.
+
+## 🌐 CORS (Cross-Origin Resource Sharing)
+
+CORS is enabled in the backend using:
+```python
+from flask_cors import CORS
+CORS(app)
+```
+
+🔸 Why CORS?
+
+CORS (Cross-Origin Resource Sharing) allows the frontend (React, usually on port 3000) to securely communicate with the Flask backend (port 5000).  
+Without it, browsers would block API requests due to cross-origin restrictions.
+
+
 
 ### 🔐 Authentication & Route Protection
-- JWT-based authentication system.
-- Protected routes using `ProtectedRoute` in React.
-- Tokens stored in localStorage/sessionStorage.
-- Global authentication state via `AuthContext`.
 
+Authentication is handled using **JWT (JSON Web Tokens)** issued upon successful login.
+
+* **Token Management**: Tokens are stored securely in the browser's `localStorage` and attached to every API request for authorization.
+* **Backend Restriction**: **Role-based decorators** (`@token_required`, `@role_required`) restrict access to sensitive API endpoints based on the user's current role (e.g., 'admin', 'reviewer').
+* **Frontend Protection**:
+    * The **`ProtectedRoute`** component ensures that pages are only accessible by logged-in users.
+    * **`AuthContext`** (React Context) stores global user authentication data (user info and token), which `ProtectedRoute` uses to redirect unauthorized users (e.g., non-admins) away from restricted routes.
+* **Token Interceptor (Frontend)**: An interceptor automatically attaches the stored token to all outgoing requests.
+
+```javascript
+// Token interceptor (frontend/api.js)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+```
 ---
+
+
+### 📚 Exercise System (Gamified Learning)
+
+* **Dynamic Fetching**: Exercises are fetched dynamically based on selected **difficulty** and the user's current **level**.
+* **Multiple Types**: Supports multiple question formats: **multiple choice**, **text input**, and **drag-and-drop** (for re-arranging items).
+* **Instant Feedback**: Feedback is provided instantly with correct/incorrect validation.
+* **Gamification Integration**: **XP** and **achievements** are automatically calculated and updated by the backend upon completion.
+* **Reviewer Management**: Reviewers can manage questions, **approve user submissions**, and **flag errors** for correction.
 
 ## ⚙️ Technologies Used
 
@@ -60,9 +141,7 @@ User roles:
 - **PyJWT** — secure JWT authentication.
 - **SQLite** — local database (easily replaceable with PostgreSQL/MySQL).
 
-#### 🔸 Why CORS?
-CORS (Cross-Origin Resource Sharing) allows the frontend (React, usually on port 3000) to securely communicate with the Flask backend (port 5000).  
-Without it, browsers would block API requests due to cross-origin restrictions.
+
 
 ### 💻 Frontend
 - **React** — dynamic and modular user interface.
@@ -125,104 +204,57 @@ project/
 
 ---
 
-## 🔐 Authentication System
 
-Authentication is handled using **JWT (JSON Web Tokens)**.  
-After logging in, the backend issues a signed token stored on the client.
+### 🧠 Core Backend Components
 
-```js
-// Token interceptor example (frontend/api.js)
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-```
-
-Protected routes example:
-```js
-<ProtectedRoute>
-  <AdminRequests />
-</ProtectedRoute>
-```
-Backend role validation uses decorators:
-```js
-@token_required
-@role_required('admin')
-def get_admin_data():
-```
-
-🧠 Exercises (Questions.js)
-
-Dynamically fetch exercises based on user difficulty.
-Supports feedback for correct/incorrect answers.
-Includes drag & drop logic for rearrange-type questions.
-Users can report incorrect questions directly to reviewers.
-
-🧑‍🏫 Reviewer Panel
-
-Displays all exercises from the database.
-Allows creating, editing, or deleting exercises.
-Supports different difficulty levels.
-Real-time feedback on success/failure.
-
-🛠️ Admin Panel
-
-Displays all role requests submitted by users.
-Admins can approve or reject requests.
-Requests update dynamically without page reloads.
-
-🔌 REST API Overview
-| Method | Endpoint | Description |
+| File | Role | Key Responsibilities |
 | :--- | :--- | :--- |
-| POST | /api/login | User authentication and token generation |
-| POST | /api/register | Register a new user |
-| GET | /api/questions | Retrieve exercises |
-| POST | /api/report | Report incorrect exercise |
-| GET | /api/admin/requests | Fetch pending role requests |
-| POST | /api/reviewer/add | Add a new exercise |
-| PUT | /api/reviewer/edit/<id> | Edit existing exercise |
-| DELETE | /api/reviewer/delete/<id> | Delete exercise |
+| **`app.py`** | Initialization | Initializes the Flask app, database, and CORS. Registers blueprints for different user roles. Handles automatic DB creation. |
+| **`auth.py`** | Authentication | Manages JWT creation and decoding. Provides decorators for authentication and role-based authorization (`@token_required`, `@role_required`). |
+| **`models.py`** | Data Schema | Defines all main entities: <br/>- **User**: Stores credentials, XP, role, streaks. <br/>- **Exercise**: Contains question data and correct answers. <br/>- **Notification**: Messages for users (e.g. achievements, approvals). <br/>- **ReviewerRequest**: User requests to be reviewed. <br/>- **Achievement** / **UserAchievement**: Progress and rewards system. <br/>- **RoleRequest**: System for requesting admin/reviewer roles. |
+| **`routes/`** | API Endpoints | Contains blueprints for specific functionalities: <br/>- **`admin_routes.py`**: Admin endpoints for user management and role handling. <br/>- **`reviewer_routes.py`**: CRUD operations for exercises, reviewer approvals. <br/>- **`user_routes.py`**: Notifications, achievements, and reviewer request endpoints. |
 
-⚙️ Run the Project Locally
-Backend (Flask)
 
-cd backend
-pip install flask flask_sqlalchemy flask_cors PyJWT
-python app.py
+### 🔗 Example API Endpoints
 
-Backend runs on: http://127.0.0.1:5000
+| Role | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `GET` | `/api/admin/users` | Get all users |
+| **Admin** | `POST` | `/api/admin/ban_user` | Ban a user |
+| **Admin** | `POST` | `/api/admin/unban_user` | Unban a user |
+| **Reviewer** | `GET` | `/api/reviewer/exercises` | List exercises |
+| **Reviewer** | `PUT` | `/api/reviewer/exercises/<id>` | Edit exercise |
+| **Reviewer** | `DELETE` | `/api/reviewer/exercises/<id>` | Delete exercise |
+| **User** | `POST` | `/api/reviewer_requests` | Create reviewer request |
+| **User** | `GET` | `/api/notifications/<id>` | Get notifications |
 
-Frontend (React)
 
-cd frontend
-npm install
-npm start
 
-Frontend runs on: http://localhost:3000
+### 🏆 Achievements & Gamification
 
-🧩 Database
+* **XP** and **streak-based** progression system.
+* Achievements tracked include:
+    * Daily correct answers
+    * Total correct answers
+    * Longest streaks
+* Automatic **XP rewards** are granted upon achievement completion.
 
-If the database file doesn’t exist, it will be created automatically at runtime:
 
-if not os.path.exists(DB_PATH):
-    db.create_all()
+### 🎨 Design & UX
 
-Default location: instance/duolingo_db.sqlite3
+* **Aesthetics**: Features a **clean, intuitive, and minimal interface**.
+* **Gamification**: Integrates a **gamified learning system** covering **XP, progress tracking, and achievements**.
+* **Responsiveness**: Fully **responsive layout** supporting both desktop and mobile devices.
 
-🎨 Design & UX
+---
 
-Clean, intuitive, and minimal design.
-Gamified learning system (XP, progress, achievements).
-Responsive layout (desktop and mobile).
+### 🔮 Future Improvements
 
-🔮 Future Improvements
-
-🔒 Password hashing with bcrypt or werkzeug.security
-☁️ Database migration to PostgreSQL
-📱 Modern UI with Tailwind or Material UI
-🕒 Refresh tokens for long sessions
-📊 User profile and progress tracking
+* **Security**: Implement robust **password hashing** using `bcrypt` or `werkzeug.security`.
+* **Scalability**: **Database migration to PostgreSQL** for better scalability and reliability.
+* **Interface**: **Modern UI redesign** utilizing frameworks like **Tailwind CSS** or **Material UI**.
+* **Authentication**: Add **refresh tokens** for long-running and more secure user sessions.
+* **Analytics**: Develop a dedicated **User Profile** page with **progress analytics** and historical data tracking.
 
 
 
