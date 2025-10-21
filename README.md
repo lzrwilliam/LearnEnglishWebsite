@@ -188,8 +188,6 @@ Requests update dynamically without page reloads.
 Backend (Flask)
 
 cd backend
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install flask flask_sqlalchemy flask_cors PyJWT
 python app.py
 
