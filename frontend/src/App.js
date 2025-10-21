@@ -127,7 +127,7 @@ function App() {
                         <Route path="/" element={<Navigate to="/questions"/>} />
                         <Route path="/login" element={user ? <Navigate to="/"/> : <Login/>} />
                         <Route path="/register" element={user ? <Navigate to="/"/> : <Register/>} />
-                        
+                        <Route path="/admin/*" element={<ProtectedRoute ><AdminRequests/></ProtectedRoute>} />
                         <Route path="/questions" element={<ProtectedRoute><Questions updateXp={updateXp}/></ProtectedRoute>}/>
                         <Route path="/notifications" element={<ProtectedRoute><Notifications/></ProtectedRoute>} />
                         <Route path="/leaderboards" element={<ProtectedRoute><Leaderboard/></ProtectedRoute>} />
