@@ -230,6 +230,40 @@ project/
 
 
 
+## 🧪 Testing (Unit & Integration Tests)
+
+Comprehensive **unit and integration tests** are implemented to ensure backend reliability and code quality.  
+Testing focuses on **authentication**, **role-based access**, **user registration**, **file uploads**, and **core API endpoints**.
+
+### 🔍 Testing Frameworks & Tools
+- **pytest** — main testing framework  
+- **freezegun** — simulates time-based token expiration  
+- **Flask test client** — for integration testing of API endpoints
+
+### 🧠 Test Structure
+
+| File | Purpose |
+|------|----------|
+| **`conftest.py`** | Global pytest configuration and reusable client fixture that sets up a temporary SQLite database before each test. |
+| **`test_app.py`** | Tests for user registration, login, file upload, and leaderboard logic. |
+| **`test_auth.py`** | Unit tests for JWT generation/verification and integration tests for protected routes. |
+
+### ✅ Test Types
+- **Unit Tests** — Validate isolated functionality such as token generation and allowed file types.  
+- **Integration Tests** — Verify correct interaction between Flask routes, models, and authentication logic.  
+  Examples include:
+  - Registering and logging in a user
+  - Validating JWT tokens and access control
+  - Uploading files and verifying leaderboard data
+  - Role-based access validation (`admin`, `reviewer`, `user`)
+
+### 🧭 Running Tests
+From the **backend directory**, run:
+```bash
+pytest -v
+```
+
+
 ### 🏆 Achievements & Gamification
 
 * **XP** and **streak-based** progression system.
