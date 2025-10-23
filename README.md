@@ -282,6 +282,19 @@ pytest -v
 
 ---
 
+
+## 📸 Screenshots
+Below are screenshots illustrating key functionalities:
+1. 🏠 **Home** | Displays user stats, XP, and recent activity.
+   ![Home](assets/home.png)
+2.  **Exercises Page** | Dynamic question interface with multiple question types and instant feedback.
+   ![Exercises](assets/1.png)
+3. **Leaderboard Page**
+   ![Leaderboard](assets/leaderboard.png))
+
+
+---
+
 ### 🔮 Future Improvements
 
 * **Security**: Implement robust **password hashing** using `bcrypt` or `werkzeug.security`.
