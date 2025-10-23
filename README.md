@@ -286,11 +286,11 @@ pytest -v
 ## 📸 Screenshots
 Below are screenshots illustrating key functionalities:
 1. 🏠 **Home** | Displays user stats, XP, and recent activity.
-   ![Home](assets/home.png)
+   ![Home](assets/home.JPG)
 2.  **Exercises Page** | Dynamic question interface with multiple question types and instant feedback.
-   ![Exercises](assets/1.png)
+   ![Exercises](assets/1.JPG)
 3. **Leaderboard Page**
-   ![Leaderboard](assets/leaderboard.png))
+   ![Leaderboard](assets/leaderboard.JPG))
 
 
 ---
